@@ -3,7 +3,9 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/pwnderpants/homenet/internal/database"
 )
@@ -43,7 +45,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		Title: "HTMX + Go + Tailwind",
+		Title: "Homenet",
 		Count: 0,
 	}
 
@@ -932,4 +934,40 @@ func RandomMovieHandler(w http.ResponseWriter, r *http.Request) {
 		</div>`
 
 	w.Write([]byte(movieHTML))
+}
+
+// FortuneHandler handles getting a fortune
+func FortuneHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Run fortune command
+	cmd := exec.Command("fortune", "-s")
+	output, err := cmd.Output()
+	if err != nil {
+		// If fortune command fails, return a default message
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<p class="text-gray-300">Built with ❤️ using HTMX, Go, and Tailwind CSS</p>`))
+		return
+	}
+
+	// Clean the output and return as HTML
+	fortune := strings.TrimSpace(string(output))
+	if fortune == "" {
+		fortune = "Built with ❤️ using HTMX, Go, and Tailwind CSS"
+	}
+
+	// Determine the appropriate text color based on the referer
+	referer := r.Header.Get("Referer")
+	var textClass string
+	if strings.Contains(referer, "/movie-board") || strings.Contains(referer, "/tv-shows-board") {
+		textClass = "text-gray-300"
+	} else {
+		textClass = "text-gray-600 dark:text-gray-300"
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(`<p class="` + textClass + `">` + fortune + `</p>`))
 }

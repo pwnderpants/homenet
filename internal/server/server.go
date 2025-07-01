@@ -42,6 +42,7 @@ func (s *Server) SetupRoutes() {
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
 	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
+	http.HandleFunc("/fortune", handlers.FortuneHandler)
 
 	// TV Shows Board routes
 	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
@@ -64,6 +65,7 @@ func StartServer(port string) error {
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
 	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
+	http.HandleFunc("/fortune", handlers.FortuneHandler)
 
 	// TV Shows Board routes
 	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
