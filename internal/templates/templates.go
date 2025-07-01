@@ -33,11 +33,13 @@ func (t *Templates) LoadTemplates() error {
 		if !info.IsDir() && filepath.Ext(path) == ".html" {
 			name := filepath.Base(path)
 			tmpl, err := template.ParseFiles(path)
+
 			if err != nil {
 				return err
 			}
 
 			t.templates[name] = tmpl
+
 			log.Printf("Loaded template: %s", name)
 		}
 
@@ -50,12 +52,14 @@ func (t *Templates) LoadTemplates() error {
 // GetTemplate returns a template by name
 func (t *Templates) GetTemplate(name string) (*template.Template, bool) {
 	tmpl, exists := t.templates[name]
+
 	return tmpl, exists
 }
 
 // ExecuteTemplate executes a template with the given data
 func (t *Templates) ExecuteTemplate(w http.ResponseWriter, name string, data interface{}) error {
 	tmpl, exists := t.GetTemplate(name)
+
 	if !exists {
 		return fmt.Errorf("template %s not found", name)
 	}

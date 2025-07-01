@@ -9,6 +9,7 @@ import (
 func main() {
 	// Create and configure server
 	srv := server.New()
+
 	srv.SetupRoutes()
 
 	// Start the server

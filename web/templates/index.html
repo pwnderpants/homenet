@@ -14,8 +14,6 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
-
-    
     <style>
         /* Custom scrollbar for dark theme */
         ::-webkit-scrollbar {
@@ -67,21 +65,6 @@
                         Go for the backend, and Tailwind CSS for styling with dark mode support.
                     </p>
                 </div>
-
-                <!-- Interactive counter section -->
-                <div id="counter-section" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-                    <div class="text-center">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Counter: <span id="counter">0</span></h2>
-                        <button 
-                            hx-post="/increment" 
-                            hx-target="#counter-section"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                            Increment
-                        </button>
-                    </div>
-                </div>
-
-
 
                 <!-- Feature cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

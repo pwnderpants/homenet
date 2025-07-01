@@ -9,7 +9,6 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 - 🎨 **Tailwind CSS**: Utility-first CSS framework
 - 🌙 **Dark Theme**: Fixed dark theme design
 - 📱 **Responsive Design**: Mobile-first responsive layout
-- 🔄 **Interactive Counter**: Demo of HTMX functionality
 
 ## Project Structure
 
@@ -93,11 +92,11 @@ PORT=3000 go run cmd/server/main.go
 
 ### HTMX Integration
 
-The application demonstrates HTMX functionality with an interactive counter:
+The application is ready for HTMX functionality:
 
-- Click the "Increment" button to see HTMX in action
-- The counter updates without a full page reload
 - Server-side rendering with Go templates
+- Static file serving for CSS and JavaScript
+- Modular handler structure for easy HTMX endpoint addition
 
 ### Dark Theme
 
@@ -146,6 +145,8 @@ Add HTMX attributes to HTML elements:
     Click me
 </button>
 ```
+
+To add new HTMX endpoints, create handlers in `internal/handlers/handlers.go` and register them in `internal/server/server.go`.
 
 
 
