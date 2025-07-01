@@ -60,6 +60,7 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/templates/movie-board.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -67,6 +68,7 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	movies, err := database.GetAllMovies()
 	if err != nil {
 		http.Error(w, "Failed to load movies: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -79,6 +81,7 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 }
@@ -88,6 +91,7 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/templates/tv-shows-board.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -95,6 +99,7 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 	tvShows, err := database.GetAllTVShows()
 	if err != nil {
 		http.Error(w, "Failed to load TV shows: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -105,8 +110,10 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = tmpl.Execute(w, data)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 }
@@ -115,13 +122,16 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Parse form data
 	err := r.ParseForm()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -134,15 +144,19 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
+
 		return
 	}
 
 	// Parse year
 	year := 0
+
 	if yearStr != "" {
 		year, err = strconv.Atoi(yearStr)
+
 		if err != nil {
 			http.Error(w, "Invalid year", http.StatusBadRequest)
+
 			return
 		}
 	}
@@ -161,6 +175,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieID, err := database.AddMovie(newMovie)
 	if err != nil {
 		http.Error(w, "Failed to add movie: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -171,6 +186,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	allMovies, err := database.GetAllMovies()
 	if err != nil {
 		http.Error(w, "Failed to get movies: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -179,6 +195,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate HTML for all movies
 	var moviesHTML string
+
 	for _, movie := range allMovies {
 		movieHTML := `
 		<div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
@@ -268,6 +285,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
@@ -275,6 +293,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -288,6 +307,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
+
 		return
 	}
 
@@ -295,8 +315,10 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	year := 0
 	if yearStr != "" {
 		year, err = strconv.Atoi(yearStr)
+
 		if err != nil {
 			http.Error(w, "Invalid year", http.StatusBadRequest)
+
 			return
 		}
 	}
@@ -314,8 +336,10 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Add to database
 	tvShowID, err := database.AddTVShow(newTVShow)
+
 	if err != nil {
 		http.Error(w, "Failed to add TV show: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -324,8 +348,10 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get all TV shows from database to return the complete updated list
 	allTVShows, err := database.GetAllTVShows()
+
 	if err != nil {
 		http.Error(w, "Failed to get TV shows: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -334,6 +360,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate HTML for all TV shows
 	var tvShowsHTML string
+
 	for _, tvShow := range allTVShows {
 		tvShowHTML := `
 		<div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
@@ -423,16 +450,18 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 func DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Extract movie ID from URL
 	path := r.URL.Path
 	idStr := path[len("/movie-board/delete/"):]
-
 	id, err := strconv.Atoi(idStr)
+
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+
 		return
 	}
 
@@ -440,6 +469,7 @@ func DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 	err = database.DeleteMovie(id)
 	if err != nil {
 		http.Error(w, "Failed to delete movie: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -451,14 +481,15 @@ func DeleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 func DeleteTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Extract TV show ID from URL
 	path := r.URL.Path
 	idStr := path[len("/tv-shows-board/delete/"):]
-
 	id, err := strconv.Atoi(idStr)
+
 	if err != nil {
 		http.Error(w, "Invalid TV show ID", http.StatusBadRequest)
 		return
@@ -466,6 +497,7 @@ func DeleteTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Delete from database
 	err = database.DeleteTVShow(id)
+
 	if err != nil {
 		http.Error(w, "Failed to delete TV show: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -479,13 +511,16 @@ func DeleteTVShowHandler(w http.ResponseWriter, r *http.Request) {
 func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Parse form data
 	err := r.ParseForm()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -499,20 +534,25 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
+
 		return
 	}
 
 	// Parse movie ID
 	id, err := strconv.Atoi(idStr)
+
 	if err != nil {
 		http.Error(w, "Invalid movie ID", http.StatusBadRequest)
+
 		return
 	}
 
 	// Parse year
 	year := 0
+
 	if yearStr != "" {
 		year, err = strconv.Atoi(yearStr)
+
 		if err != nil {
 			http.Error(w, "Invalid year", http.StatusBadRequest)
 			return
@@ -531,15 +571,19 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = database.UpdateMovie(updatedMovie)
+
 	if err != nil {
 		http.Error(w, "Failed to update movie: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
 	// Get all movies from database to return the complete updated list
 	allMovies, err := database.GetAllMovies()
+
 	if err != nil {
 		http.Error(w, "Failed to get movies: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -548,6 +592,7 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate HTML for all movies
 	var moviesHTML string
+
 	for _, movie := range allMovies {
 		movieHTML := `
 		<div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
@@ -637,13 +682,16 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Parse form data
 	err := r.ParseForm()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -658,22 +706,28 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
+
 		return
 	}
 
 	// Parse TV show ID
 	id, err := strconv.Atoi(idStr)
+
 	if err != nil {
 		http.Error(w, "Invalid TV show ID", http.StatusBadRequest)
+
 		return
 	}
 
 	// Parse year
 	year := 0
+
 	if yearStr != "" {
 		year, err = strconv.Atoi(yearStr)
+
 		if err != nil {
 			http.Error(w, "Invalid year", http.StatusBadRequest)
+
 			return
 		}
 	}
@@ -691,15 +745,19 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = database.UpdateTVShow(updatedTVShow)
+
 	if err != nil {
 		http.Error(w, "Failed to update TV show: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
 	// Get all TV shows from database to return the complete updated list
 	allTVShows, err := database.GetAllTVShows()
+
 	if err != nil {
 		http.Error(w, "Failed to get TV shows: "+err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
@@ -708,6 +766,7 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate HTML for all TV shows
 	var tvShowsHTML string
+
 	for _, tvShow := range allTVShows {
 		tvShowHTML := `
 		<div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
@@ -791,4 +850,86 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	</div>`
 
 	w.Write([]byte(response))
+}
+
+// RandomMovieHandler handles getting a random movie
+func RandomMovieHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	// Get random movie from database
+	randomMovie, err := database.GetRandomMovie()
+
+	if err != nil {
+		http.Error(w, "Failed to get random movie: "+err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	if randomMovie == nil {
+		// No movies in database
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`
+			<div class="text-center py-8">
+				<svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"></path>
+				</svg>
+				<p class="text-gray-400">No movies in your list yet. Add some movies first!</p>
+			</div>
+		`))
+		return
+	}
+
+	// Return the random movie HTML for the modal
+	w.Header().Set("Content-Type", "text/html")
+
+	movieHTML := `
+		<div class="bg-gray-700 rounded-lg p-6 border border-gray-600">
+			<div class="text-center mb-4">
+				<h3 class="text-2xl font-bold text-white mb-2">🎬 Your Random Movie Pick!</h3>
+				<p class="text-gray-300">Here's what you should watch tonight:</p>
+			</div>
+			<div class="space-y-4">
+				<div class="text-center">
+					<h4 class="text-xl font-semibold text-white mb-2">` + randomMovie.Title + `</h4>
+					<div class="flex items-center justify-center space-x-4 text-sm text-gray-300">`
+
+	if randomMovie.Year > 0 {
+		movieHTML += `<span class="bg-gray-600 px-2 py-1 rounded">` + strconv.Itoa(randomMovie.Year) + `</span>`
+	}
+
+	if randomMovie.Genre != "" {
+		movieHTML += `<span class="bg-blue-600 px-2 py-1 rounded">` + randomMovie.Genre + `</span>`
+	}
+
+	if randomMovie.Streaming != "" {
+		movieHTML += `<span class="bg-green-600 px-2 py-1 rounded">` + randomMovie.Streaming + `</span>`
+	}
+
+	movieHTML += `
+					</div>
+				</div>`
+
+	if randomMovie.IMDBLink != "" {
+		movieHTML += `
+				<div class="text-center">
+					<a href="` + randomMovie.IMDBLink + `" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm">View on IMDB</a>
+				</div>`
+	}
+
+	if randomMovie.Notes != "" {
+		movieHTML += `
+				<div class="text-center">
+					<p class="text-gray-400 text-sm italic">"` + randomMovie.Notes + `"</p>
+				</div>`
+	}
+
+	movieHTML += `
+			</div>
+		</div>`
+
+	w.Write([]byte(movieHTML))
 }

@@ -203,6 +203,25 @@ func UpdateMovie(movie Movie) error {
 	return nil
 }
 
+// GetRandomMovie retrieves a random movie from the database
+func GetRandomMovie() (*Movie, error) {
+	query := "SELECT id, title, year, genre, streaming, notes, imdb_link FROM movies ORDER BY RANDOM() LIMIT 1"
+
+	var movie Movie
+
+	err := db.QueryRow(query).Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre, &movie.Streaming, &movie.Notes, &movie.IMDBLink)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // No movies found
+		}
+
+		return nil, fmt.Errorf("failed to get random movie: %w", err)
+	}
+
+	return &movie, nil
+}
+
 // GetAllTVShows retrieves all TV shows from the database
 func GetAllTVShows() ([]TVShow, error) {
 	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC,  created_at DESC")
@@ -210,6 +229,7 @@ func GetAllTVShows() ([]TVShow, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query tv shows: %w", err)
 	}
+
 	defer rows.Close()
 
 	var tvShows []TVShow
@@ -294,5 +314,6 @@ func boolToInt(b bool) int {
 	if b {
 		return 1
 	}
+
 	return 0
 }

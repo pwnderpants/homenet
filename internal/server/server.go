@@ -41,6 +41,7 @@ func (s *Server) SetupRoutes() {
 	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
+	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
 
 	// TV Shows Board routes
 	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
@@ -62,6 +63,7 @@ func StartServer(port string) error {
 	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
+	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
 
 	// TV Shows Board routes
 	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
@@ -71,9 +73,11 @@ func StartServer(port string) error {
 
 	// Serve static files
 	fs := http.FileServer(http.Dir("web/static"))
+
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Start server
 	log.Printf("Server starting on http://localhost:%s", port)
+
 	return http.ListenAndServe(":"+port, nil)
 }
