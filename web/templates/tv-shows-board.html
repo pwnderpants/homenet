@@ -16,7 +16,7 @@
     
     <script>
         function toggleAddForm() {
-            const form = document.getElementById('add-movie-form');
+            const form = document.getElementById('add-tvshow-form');
             const toggleText = document.getElementById('toggle-text');
             const toggleButton = document.getElementById('toggle-add-form');
             const formElement = form.querySelector('form');
@@ -32,7 +32,7 @@
                 // Hide form and clear it
                 form.classList.add('hidden');
                 form.classList.remove('animate-fade-in');
-                toggleText.textContent = 'Add New Movie';
+                toggleText.textContent = 'Add New TV Show';
                 toggleButton.classList.remove('bg-gray-600', 'hover:bg-gray-700');
                 toggleButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 
@@ -45,22 +45,24 @@
 
         function openEditModal(button) {
             const modal = document.getElementById('edit-modal');
-            const movieId = button.getAttribute('data-movie-id');
-            const movieTitle = button.getAttribute('data-movie-title');
-            const movieYear = button.getAttribute('data-movie-year');
-            const movieGenre = button.getAttribute('data-movie-genre');
-            const movieStreaming = button.getAttribute('data-movie-streaming');
-            const movieNotes = button.getAttribute('data-movie-notes');
-            const movieImdb = button.getAttribute('data-movie-imdb');
+            const tvshowId = button.getAttribute('data-tvshow-id');
+            const tvshowTitle = button.getAttribute('data-tvshow-title');
+            const tvshowYear = button.getAttribute('data-tvshow-year');
+            const tvshowGenre = button.getAttribute('data-tvshow-genre');
+            const tvshowStreaming = button.getAttribute('data-tvshow-streaming');
+            const tvshowNotes = button.getAttribute('data-tvshow-notes');
+            const tvshowImdb = button.getAttribute('data-tvshow-imdb');
+            const tvshowActiveSeason = button.getAttribute('data-tvshow-active-season');
             
             // Populate form fields
-            document.getElementById('edit-movie-id').value = movieId;
-            document.getElementById('edit-title').value = movieTitle;
-            document.getElementById('edit-year').value = movieYear;
-            document.getElementById('edit-genre').value = movieGenre;
-            document.getElementById('edit-streaming').value = movieStreaming;
-            document.getElementById('edit-notes').value = movieNotes;
-            document.getElementById('edit-imdb-link').value = movieImdb;
+            document.getElementById('edit-tvshow-id').value = tvshowId;
+            document.getElementById('edit-title').value = tvshowTitle;
+            document.getElementById('edit-year').value = tvshowYear;
+            document.getElementById('edit-genre').value = tvshowGenre;
+            document.getElementById('edit-streaming').value = tvshowStreaming;
+            document.getElementById('edit-notes').value = tvshowNotes;
+            document.getElementById('edit-imdb-link').value = tvshowImdb;
+            document.getElementById('edit-active-season').checked = tvshowActiveSeason === 'true';
             
             // Show modal
             modal.classList.remove('hidden');
@@ -81,64 +83,7 @@
                     closeEditModal();
                 }
             });
-            
-            // Make sure deleteMovie function is available globally
-            window.deleteMovie = deleteMovie;
-            
-            // Use event delegation for delete buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.delete-movie-btn')) {
-                    const button = e.target.closest('.delete-movie-btn');
-                    deleteMovie(button);
-                }
-            });
         });
-
-        function deleteMovie(button) {
-            const movieId = button.getAttribute('data-movie-id');
-            
-            if (confirm('Are you sure you want to delete this movie?')) {
-                fetch(`/movie-board/delete/${movieId}`, {
-                    method: 'DELETE',
-                })
-                .then(response => {
-                    if (response.ok) {
-                        // Remove the movie card from DOM
-                        const movieCard = button.closest('.bg-gray-700');
-                        if (movieCard) {
-                            movieCard.remove();
-                        }
-                        
-                        // Update movie count
-                        const movieCountElement = document.getElementById('movie-count');
-                        const currentCount = parseInt(movieCountElement.textContent.match(/\d+/)[0]);
-                        const newCount = currentCount - 1;
-                        
-                        if (newCount === 0) {
-                            // Show "no movies" message
-                            const movieList = document.getElementById('movie-list');
-                            movieList.innerHTML = `
-                                <div class="text-center py-8">
-                                    <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"></path>
-                                    </svg>
-                                    <p class="text-gray-400">No movies added yet. Add your first movie above!</p>
-                                </div>
-                            `;
-                            movieCountElement.textContent = '0 movies in your list';
-                        } else {
-                            movieCountElement.textContent = newCount + ' movies in your list';
-                        }
-                        
-                    } else {
-                        alert('Failed to delete movie');
-                    }
-                })
-                .catch(error => {
-                    alert('Failed to delete movie: ' + error.message);
-                });
-            }
-        }
     </script>
     
     <style>
@@ -194,10 +139,10 @@
                         <a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                             Home
                         </a>
-                        <a href="/movie-board" class="text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+                        <a href="/movie-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
                             Movie Board
                         </a>
-                        <a href="/tv-shows-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                        <a href="/tv-shows-board" class="text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">
                             TV Shows Board
                         </a>
                     </div>
@@ -211,14 +156,14 @@
                 <!-- Header section -->
                 <div class="text-center mb-8">
                     <h2 class="text-4xl font-bold text-white mb-4">
-                        Movie Board
+                        TV Shows Board
                     </h2>
                     <p class="text-lg text-gray-300 max-w-2xl mx-auto">
-                        Add movies to your watchlist and manage your collection
+                        Add TV shows to your watchlist and manage your collection
                     </p>
                 </div>
 
-                <!-- Add Movie Toggle Button -->
+                <!-- Add TV Show Toggle Button -->
                 <div class="text-center mb-6">
                     <button 
                         id="toggle-add-form"
@@ -227,19 +172,19 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        <span id="toggle-text">Add New Movie</span>
+                        <span id="toggle-text">Add New TV Show</span>
                     </button>
                 </div>
 
-                <!-- Add Movie Form -->
-                <div id="add-movie-form" class="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-8 mb-8 hidden">
-                    <h3 class="text-2xl font-bold text-white mb-6">Add New Movie</h3>
+                <!-- Add TV Show Form -->
+                <div id="add-tvshow-form" class="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-8 mb-8 hidden">
+                    <h3 class="text-2xl font-bold text-white mb-6">Add New TV Show</h3>
                     
-                    <form hx-post="/movie-board/add" hx-target="#movie-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) toggleAddForm()" class="space-y-6">
+                    <form hx-post="/tv-shows-board/add" hx-target="#tvshow-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) toggleAddForm()" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="title" class="block text-sm font-medium text-gray-300 mb-2">
-                                    Movie Title
+                                    TV Show Title
                                 </label>
                                 <input 
                                     type="text" 
@@ -247,7 +192,7 @@
                                     name="title" 
                                     required
                                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter movie title">
+                                    placeholder="Enter TV show title">
                             </div>
                             
                             <div>
@@ -285,6 +230,10 @@
                                     <option value="Romance">Romance</option>
                                     <option value="Documentary">Documentary</option>
                                     <option value="Animation">Animation</option>
+                                    <option value="Crime">Crime</option>
+                                    <option value="Mystery">Mystery</option>
+                                    <option value="Fantasy">Fantasy</option>
+                                    <option value="Western">Western</option>
                                 </select>
                             </div>
                             
@@ -332,7 +281,12 @@
                                 name="notes" 
                                 rows="3"
                                 class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Add any notes about the movie..."></textarea>
+                                placeholder="Add any notes about the TV show..."></textarea>
+                        </div>
+                        
+                        <div class="flex items-center mt-4">
+                            <input type="checkbox" id="active_season" name="active_season" class="mr-2">
+                            <label for="active_season" class="text-gray-300">Active Season</label>
                         </div>
                         
                         <div class="flex justify-between items-center">
@@ -351,23 +305,23 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
-                                <span>Add Movie</span>
+                                <span>Add TV Show</span>
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Movie List -->
+                <!-- TV Show List -->
                 <div class="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-8">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold text-white">Movie List</h3>
-                        <div class="text-sm text-gray-400" id="movie-count">
-                            {{.MovieCount}} movies in your list
+                        <h3 class="text-2xl font-bold text-white">TV Show List</h3>
+                        <div class="text-sm text-gray-400" id="tvshow-count">
+                            {{.TVShowCount}} TV shows in your list
                         </div>
                     </div>
                     
-                    <div id="movie-list" class="space-y-4">
-                        {{range .Movies}}
+                    <div id="tvshow-list" class="space-y-4">
+                        {{range .TVShows}}
                         <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
                             <div class="flex justify-between items-start">
                                 <div class="flex-1">
@@ -382,6 +336,9 @@
                                         {{if .Streaming}}
                                         <span class="bg-green-600 px-2 py-1 rounded">{{.Streaming}}</span>
                                         {{end}}
+                                        {{if .ActiveSeason}}
+                                        <span class="bg-yellow-500 px-2 py-1 rounded text-black font-semibold">Active Season</span>
+                                        {{end}}
                                     </div>
                                     {{if .IMDBLink}}
                                     <div class="mt-2">
@@ -394,13 +351,14 @@
                                 </div>
                                 <div class="flex space-x-2">
                                     <button 
-                                        data-movie-id="{{.ID}}"
-                                        data-movie-title="{{.Title}}"
-                                        data-movie-year="{{.Year}}"
-                                        data-movie-genre="{{.Genre}}"
-                                        data-movie-streaming="{{.Streaming}}"
-                                        data-movie-notes="{{.Notes}}"
-                                        data-movie-imdb="{{.IMDBLink}}"
+                                        data-tvshow-id="{{.ID}}"
+                                        data-tvshow-title="{{.Title}}"
+                                        data-tvshow-year="{{.Year}}"
+                                        data-tvshow-genre="{{.Genre}}"
+                                        data-tvshow-streaming="{{.Streaming}}"
+                                        data-tvshow-notes="{{.Notes}}"
+                                        data-tvshow-imdb="{{.IMDBLink}}"
+                                        data-tvshow-active-season="{{.ActiveSeason}}"
                                         onclick="openEditModal(this)"
                                         class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -408,8 +366,8 @@
                                         </svg>
                                     </button>
                                     <button 
-                                        data-movie-id="{{.ID}}"
-                                        class="delete-movie-btn text-red-400 hover:text-red-300 transition-colors duration-200">
+                                        data-tvshow-id="{{.ID}}"
+                                        class="delete-tvshow-btn text-red-400 hover:text-red-300 transition-colors duration-200">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -422,7 +380,7 @@
                             <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"></path>
                             </svg>
-                            <p class="text-gray-400">No movies added yet. Add your first movie above!</p>
+                            <p class="text-gray-400">No TV shows added yet. Add your first TV show above!</p>
                         </div>
                         {{end}}
                     </div>
@@ -442,11 +400,11 @@
         </footer>
     </div>
 
-    <!-- Edit Movie Modal -->
+    <!-- Edit TV Show Modal -->
     <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-white">Edit Movie</h3>
+                <h3 class="text-2xl font-bold text-white">Edit TV Show</h3>
                 <button 
                     onclick="closeEditModal()"
                     class="text-gray-400 hover:text-gray-300 transition-colors duration-200">
@@ -456,13 +414,13 @@
                 </button>
             </div>
             
-            <form id="edit-movie-form" hx-put="/movie-board/edit" hx-target="#movie-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) closeEditModal()" class="space-y-6">
-                <input type="hidden" id="edit-movie-id" name="id">
+            <form id="edit-tvshow-form" hx-put="/tv-shows-board/edit" hx-target="#tvshow-list" hx-swap="innerHTML" hx-on::after-request="if(event.detail.successful) closeEditModal()" class="space-y-6">
+                <input type="hidden" id="edit-tvshow-id" name="id">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="edit-title" class="block text-sm font-medium text-gray-300 mb-2">
-                            Movie Title
+                            TV Show Title
                         </label>
                         <input 
                             type="text" 
@@ -470,7 +428,7 @@
                             name="title" 
                             required
                             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter movie title">
+                            placeholder="Enter TV show title">
                     </div>
                     
                     <div>
@@ -508,6 +466,10 @@
                             <option value="Romance">Romance</option>
                             <option value="Documentary">Documentary</option>
                             <option value="Animation">Animation</option>
+                            <option value="Crime">Crime</option>
+                            <option value="Mystery">Mystery</option>
+                            <option value="Fantasy">Fantasy</option>
+                            <option value="Western">Western</option>
                         </select>
                     </div>
                     
@@ -555,7 +517,12 @@
                         name="notes" 
                         rows="3"
                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Add any notes about the movie..."></textarea>
+                        placeholder="Add any notes about the TV show..."></textarea>
+                </div>
+                
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" id="edit-active-season" name="active_season" class="mr-2">
+                    <label for="edit-active-season" class="text-gray-300">Active Season</label>
                 </div>
                 
                 <div class="flex justify-end space-x-4">

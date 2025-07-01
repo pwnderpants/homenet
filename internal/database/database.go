@@ -19,6 +19,17 @@ type Movie struct {
 	IMDBLink  string
 }
 
+type TVShow struct {
+	ID           int
+	Title        string
+	Year         int
+	Genre        string
+	Streaming    string
+	Notes        string
+	IMDBLink     string
+	ActiveSeason bool
+}
+
 var db *sql.DB
 
 // InitDB initializes the SQLite database
@@ -48,7 +59,7 @@ func InitDB() error {
 	}
 
 	// Create movies table if it doesn't exist
-	createTableSQL := `
+	createMoviesTableSQL := `
 	CREATE TABLE IF NOT EXISTS movies (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
@@ -60,15 +71,39 @@ func InitDB() error {
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);`
 
+	// Create tv_shows table if it doesn't exist
+	createTVShowsTableSQL := `
+	CREATE TABLE IF NOT EXISTS tv_shows (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		title TEXT NOT NULL,
+		year INTEGER,
+		genre TEXT,
+		streaming TEXT,
+		notes TEXT,
+		imdb_link TEXT,
+		active_season INTEGER DEFAULT 0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);`
+
 	// Add streaming column if it doesn't exist (for existing databases)
 	addStreamingColumnSQL := `ALTER TABLE movies ADD COLUMN streaming TEXT;`
+	addTVShowsStreamingColumnSQL := `ALTER TABLE tv_shows ADD COLUMN streaming TEXT;`
+	addActiveSeasonColumnSQL := `ALTER TABLE tv_shows ADD COLUMN active_season INTEGER DEFAULT 0;`
 
-	db.Exec(addStreamingColumnSQL) // Ignore error if column already exists
+	db.Exec(addStreamingColumnSQL)        // Ignore error if column already exists
+	db.Exec(addTVShowsStreamingColumnSQL) // Ignore error if column already exists
+	db.Exec(addActiveSeasonColumnSQL)     // Ignore error if column already exists
 
-	_, err = db.Exec(createTableSQL)
+	_, err = db.Exec(createMoviesTableSQL)
 
 	if err != nil {
-		return fmt.Errorf("failed to create table: %w", err)
+		return fmt.Errorf("failed to create movies table: %w", err)
+	}
+
+	_, err = db.Exec(createTVShowsTableSQL)
+
+	if err != nil {
+		return fmt.Errorf("failed to create tv_shows table: %w", err)
 	}
 
 	return nil
@@ -166,4 +201,98 @@ func UpdateMovie(movie Movie) error {
 	}
 
 	return nil
+}
+
+// GetAllTVShows retrieves all TV shows from the database
+func GetAllTVShows() ([]TVShow, error) {
+	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC,  created_at DESC")
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to query tv shows: %w", err)
+	}
+	defer rows.Close()
+
+	var tvShows []TVShow
+
+	for rows.Next() {
+		var tvShow TVShow
+		var activeSeasonInt int
+		err := rows.Scan(&tvShow.ID, &tvShow.Title, &tvShow.Year, &tvShow.Genre, &tvShow.Streaming, &tvShow.Notes, &tvShow.IMDBLink, &activeSeasonInt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan tv show: %w", err)
+		}
+		tvShow.ActiveSeason = activeSeasonInt == 1
+		tvShows = append(tvShows, tvShow)
+	}
+
+	return tvShows, nil
+}
+
+// AddTVShow adds a new TV show to the database and returns the ID
+func AddTVShow(tvShow TVShow) (int, error) {
+	query := `
+	INSERT INTO tv_shows (title, year, genre, streaming, notes, imdb_link, active_season)
+	VALUES (?, ?, ?, ?, ?, ?, ?)`
+
+	result, err := db.Exec(query, tvShow.Title, tvShow.Year, tvShow.Genre, tvShow.Streaming, tvShow.Notes, tvShow.IMDBLink, boolToInt(tvShow.ActiveSeason))
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert tv show: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last insert id: %w", err)
+	}
+
+	return int(id), nil
+}
+
+// DeleteTVShow deletes a TV show by ID
+func DeleteTVShow(id int) error {
+	query := "DELETE FROM tv_shows WHERE id = ?"
+	_, err := db.Exec(query, id)
+
+	if err != nil {
+		return fmt.Errorf("failed to delete tv show: %w", err)
+	}
+
+	return nil
+}
+
+// GetTVShowCount returns the total number of TV shows
+func GetTVShowCount() (int, error) {
+	var count int
+
+	err := db.QueryRow("SELECT COUNT(*) FROM tv_shows").Scan(&count)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to get tv show count: %w", err)
+	}
+
+	return count, nil
+}
+
+// UpdateTVShow updates an existing TV show in the database
+func UpdateTVShow(tvShow TVShow) error {
+	query := `
+	UPDATE tv_shows 
+	SET title = ?, year = ?, genre = ?, streaming = ?, notes = ?, imdb_link = ?, active_season = ?
+	WHERE id = ?`
+
+	_, err := db.Exec(query, tvShow.Title, tvShow.Year, tvShow.Genre, tvShow.Streaming, tvShow.Notes, tvShow.IMDBLink, boolToInt(tvShow.ActiveSeason), tvShow.ID)
+
+	if err != nil {
+		return fmt.Errorf("failed to update tv show: %w", err)
+	}
+
+	return nil
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
