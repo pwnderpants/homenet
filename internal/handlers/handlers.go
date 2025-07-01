@@ -14,10 +14,31 @@ import (
 type Movie = database.Movie
 type TVShow = database.TVShow
 
+// Genres list for templating
+var Genres = []string{
+	"Action",
+	"Adventure",
+	"Animation",
+	"Children's",
+	"Comedy",
+	"Crime",
+	"Documentary",
+	"Drama",
+	"Fantasy",
+	"Holiday",
+	"Horror",
+	"Mystery",
+	"Romance",
+	"Sci-Fi",
+	"Thriller",
+	"Western",
+}
+
 // PageData represents the data passed to templates
 type PageData struct {
-	Title string
-	Count int
+	Title  string
+	Count  int
+	Genres []string
 }
 
 // MovieBoardData represents the data for the movie board page
@@ -25,6 +46,7 @@ type MovieBoardData struct {
 	Title      string
 	Movies     []Movie
 	MovieCount int
+	Genres     []string
 }
 
 // TVShowBoardData represents the data for the TV show board page
@@ -32,6 +54,7 @@ type TVShowBoardData struct {
 	Title       string
 	TVShows     []TVShow
 	TVShowCount int
+	Genres      []string
 }
 
 // HomeHandler handles the main page request
@@ -45,11 +68,13 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		Title: "Homenet",
-		Count: 0,
+		Title:  "Homenet",
+		Count:  0,
+		Genres: Genres,
 	}
 
 	err = tmpl.Execute(w, data)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -60,6 +85,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 // MovieBoardHandler handles the movie board page request
 func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/templates/movie-board.html")
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -68,6 +94,7 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get movies from database
 	movies, err := database.GetAllMovies()
+
 	if err != nil {
 		http.Error(w, "Failed to load movies: "+err.Error(), http.StatusInternalServerError)
 
@@ -78,9 +105,11 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 		Title:      "Movie Board",
 		Movies:     movies,
 		MovieCount: len(movies),
+		Genres:     Genres,
 	}
 
 	err = tmpl.Execute(w, data)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -91,6 +120,7 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 // TVShowBoardHandler handles the TV show board page request
 func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/templates/tv-shows-board.html")
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -99,6 +129,7 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get TV shows from database
 	tvShows, err := database.GetAllTVShows()
+
 	if err != nil {
 		http.Error(w, "Failed to load TV shows: "+err.Error(), http.StatusInternalServerError)
 
@@ -109,6 +140,7 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 		Title:       "TV Shows Board",
 		TVShows:     tvShows,
 		TVShowCount: len(tvShows),
+		Genres:      Genres,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -175,6 +207,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Add to database
 	movieID, err := database.AddMovie(newMovie)
+
 	if err != nil {
 		http.Error(w, "Failed to add movie: "+err.Error(), http.StatusInternalServerError)
 
@@ -186,6 +219,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get all movies from database to return the complete updated list
 	allMovies, err := database.GetAllMovies()
+
 	if err != nil {
 		http.Error(w, "Failed to get movies: "+err.Error(), http.StatusInternalServerError)
 
@@ -293,6 +327,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse form data
 	err := r.ParseForm()
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
@@ -315,6 +350,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse year
 	year := 0
+
 	if yearStr != "" {
 		year, err = strconv.Atoi(yearStr)
 
@@ -946,6 +982,7 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 	// Run fortune command
 	cmd := exec.Command("fortune", "-s")
 	output, err := cmd.Output()
+
 	if err != nil {
 		// If fortune command fails, return a default message
 		w.Header().Set("Content-Type", "text/html")
@@ -955,6 +992,7 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Clean the output and return as HTML
 	fortune := strings.TrimSpace(string(output))
+
 	if fortune == "" {
 		fortune = "Built with ❤️ using HTMX, Go, and Tailwind CSS"
 	}
@@ -962,6 +1000,7 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 	// Determine the appropriate text color based on the referer
 	referer := r.Header.Get("Referer")
 	var textClass string
+
 	if strings.Contains(referer, "/movie-board") || strings.Contains(referer, "/tv-shows-board") {
 		textClass = "text-gray-300"
 	} else {

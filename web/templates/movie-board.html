@@ -313,16 +313,9 @@
                                     name="genre"
                                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     <option value="">Select a genre</option>
-                                    <option value="Action">Action</option>
-                                    <option value="Adventure">Adventure</option>
-                                    <option value="Comedy">Comedy</option>
-                                    <option value="Drama">Drama</option>
-                                    <option value="Horror">Horror</option>
-                                    <option value="Sci-Fi">Sci-Fi</option>
-                                    <option value="Thriller">Thriller</option>
-                                    <option value="Romance">Romance</option>
-                                    <option value="Documentary">Documentary</option>
-                                    <option value="Animation">Animation</option>
+                                    {{range .Genres}}
+                                    <option value="{{.}}">{{.}}</option>
+                                    {{end}}
                                 </select>
                             </div>
                             
@@ -536,16 +529,9 @@
                             name="genre"
                             class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Select a genre</option>
-                            <option value="Action">Action</option>
-                            <option value="Adventure">Adventure</option>
-                            <option value="Comedy">Comedy</option>
-                            <option value="Drama">Drama</option>
-                            <option value="Horror">Horror</option>
-                            <option value="Sci-Fi">Sci-Fi</option>
-                            <option value="Thriller">Thriller</option>
-                            <option value="Romance">Romance</option>
-                            <option value="Documentary">Documentary</option>
-                            <option value="Animation">Animation</option>
+                            {{range .Genres}}
+                            <option value="{{.}}">{{.}}</option>
+                            {{end}}
                         </select>
                     </div>
                     
