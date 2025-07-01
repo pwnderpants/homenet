@@ -9,6 +9,7 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 - 🎨 **Tailwind CSS**: Utility-first CSS framework
 - 🌙 **Dark Theme**: Fixed dark theme design
 - 📱 **Responsive Design**: Mobile-first responsive layout
+- 🎬 **Movie Board**: Interactive movie list management with HTMX
 
 ## Project Structure
 
@@ -92,11 +93,13 @@ PORT=3000 go run cmd/server/main.go
 
 ### HTMX Integration
 
-The application is ready for HTMX functionality:
+The application demonstrates HTMX functionality with the Movie Board:
 
-- Server-side rendering with Go templates
-- Static file serving for CSS and JavaScript
-- Modular handler structure for easy HTMX endpoint addition
+- **Add Movies**: Form submission with HTMX to add movies to the list
+- **Delete Movies**: HTMX-powered delete functionality
+- **Server-side rendering** with Go templates
+- **Static file serving** for CSS and JavaScript
+- **Modular handler structure** for easy HTMX endpoint addition
 
 ### Dark Theme
 
@@ -147,6 +150,18 @@ Add HTMX attributes to HTML elements:
 ```
 
 To add new HTMX endpoints, create handlers in `internal/handlers/handlers.go` and register them in `internal/server/server.go`.
+
+### Movie Board
+
+The application includes a comprehensive movie management system:
+
+- **Add Movies**: Form with title, year, genre, and notes
+- **Movie List**: Display all added movies with delete functionality
+- **HTMX Integration**: Real-time updates without page reloads
+- **Responsive Design**: Works on all device sizes
+- **In-Memory Storage**: Simple storage for demo purposes
+
+To customize the movie board, modify the handlers in `internal/handlers/handlers.go`.
 
 
 

@@ -2,18 +2,21 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/pwnderpants/homenet/internal/server"
 )
 
 func main() {
-	// Create and configure server
-	srv := server.New()
+	// Get port from environment variable or use default
+	port := os.Getenv("PORT")
 
-	srv.SetupRoutes()
+	if port == "" {
+		port = "8080"
+	}
 
 	// Start the server
-	if err := srv.Start(); err != nil {
+	if err := server.StartServer(port); err != nil {
 		log.Fatal(err)
 	}
 }

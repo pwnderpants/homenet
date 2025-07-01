@@ -1,10 +1,12 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/pwnderpants/homenet/internal/database"
 	"github.com/pwnderpants/homenet/internal/handlers"
 )
 
@@ -35,11 +37,31 @@ func (s *Server) SetupRoutes() {
 
 	// Handle routes
 	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/movie-board", handlers.MovieBoardHandler)
+	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
+	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
+	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
 }
 
-// Start starts the HTTP server
-func (s *Server) Start() error {
-	log.Printf("Server starting on http://localhost%s", s.addr)
+// StartServer initializes and starts the HTTP server
+func StartServer(port string) error {
+	// Initialize database
+	if err := database.InitDB(); err != nil {
+		return fmt.Errorf("failed to initialize database: %w", err)
+	}
 
-	return http.ListenAndServe(s.addr, nil)
+	// Set up routes
+	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/movie-board", handlers.MovieBoardHandler)
+	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
+	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
+	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
+
+	// Serve static files
+	fs := http.FileServer(http.Dir("web/static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// Start server
+	log.Printf("Server starting on http://localhost:%s", port)
+	return http.ListenAndServe(":"+port, nil)
 }
