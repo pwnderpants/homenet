@@ -195,10 +195,10 @@ func GetMovieCount() (int, error) {
 func UpdateMovie(movie Movie) error {
 	query := `
 	UPDATE movies 
-	SET title = ?, year = ?, genre = ?, streaming = ?, notes = ?, imdb_link = ?
+	SET title = ?, year = ?, genre = ?, streaming = ?, notes = ?, imdb_link = ?, available_now = ?
 	WHERE id = ?`
 
-	_, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink, movie.ID)
+	_, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink, boolToInt(movie.AvailableNow), movie.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to update movie: %w", err)
