@@ -10,13 +10,14 @@ import (
 )
 
 type Movie struct {
-	ID        int
-	Title     string
-	Year      int
-	Genre     string
-	Streaming string
-	Notes     string
-	IMDBLink  string
+	ID           int
+	Title        string
+	Year         int
+	Genre        string
+	Streaming    string
+	Notes        string
+	IMDBLink     string
+	AvailableNow bool
 }
 
 type TVShow struct {
@@ -68,7 +69,8 @@ func InitDB() error {
 		streaming TEXT,
 		notes TEXT,
 		imdb_link TEXT,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		available_now INTEGER DEFAULT 0
 	);`
 
 	// Create tv_shows table if it doesn't exist
@@ -120,7 +122,7 @@ func CloseDB() error {
 
 // GetAllMovies retrieves all movies from the database
 func GetAllMovies() ([]Movie, error) {
-	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link FROM movies ORDER BY created_at DESC")
+	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, available_now FROM movies ORDER BY created_at DESC")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to query movies: %w", err)
@@ -131,10 +133,12 @@ func GetAllMovies() ([]Movie, error) {
 
 	for rows.Next() {
 		var movie Movie
-		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre, &movie.Streaming, &movie.Notes, &movie.IMDBLink)
+		var availableNowInt int
+		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre, &movie.Streaming, &movie.Notes, &movie.IMDBLink, &availableNowInt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan movie: %w", err)
 		}
+		movie.AvailableNow = availableNowInt == 1
 		movies = append(movies, movie)
 	}
 
@@ -144,10 +148,10 @@ func GetAllMovies() ([]Movie, error) {
 // AddMovie adds a new movie to the database and returns the ID
 func AddMovie(movie Movie) (int, error) {
 	query := `
-	INSERT INTO movies (title, year, genre, streaming, notes, imdb_link)
-	VALUES (?, ?, ?, ?, ?, ?)`
+	INSERT INTO movies (title, year, genre, streaming, notes, imdb_link, available_now)
+	VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-	result, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink)
+	result, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink, boolToInt(movie.AvailableNow))
 
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert movie: %w", err)
@@ -224,7 +228,7 @@ func GetRandomMovie() (*Movie, error) {
 
 // GetAllTVShows retrieves all TV shows from the database
 func GetAllTVShows() ([]TVShow, error) {
-	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC,  created_at DESC")
+	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC, created_at DESC")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to query tv shows: %w", err)

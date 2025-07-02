@@ -52,6 +52,7 @@
             const movieStreaming = button.getAttribute('data-movie-streaming');
             const movieNotes = button.getAttribute('data-movie-notes');
             const movieImdb = button.getAttribute('data-movie-imdb');
+            const movieAvailableNow = button.getAttribute('data-movie-available-now');
             
             // Populate form fields
             document.getElementById('edit-movie-id').value = movieId;
@@ -61,6 +62,7 @@
             document.getElementById('edit-streaming').value = movieStreaming;
             document.getElementById('edit-notes').value = movieNotes;
             document.getElementById('edit-imdb-link').value = movieImdb;
+            document.getElementById('edit-available-now').checked = movieAvailableNow === 'true';
             
             // Show modal
             modal.classList.remove('hidden');
@@ -361,6 +363,11 @@
                                 placeholder="Add any notes about the movie..."></textarea>
                         </div>
                         
+                        <div class="flex items-center mt-4">
+                            <input type="checkbox" id="available_now" name="available_now" class="mr-2">
+                            <label for="available_now" class="text-gray-300">Available Now</label>
+                        </div>
+                        
                         <div class="flex justify-between items-center">
                             <button 
                                 type="button"
@@ -408,6 +415,9 @@
                                         {{if .Streaming}}
                                         <span class="bg-green-600 px-2 py-1 rounded">{{.Streaming}}</span>
                                         {{end}}
+                                        {{if .AvailableNow}}
+                                        <span class="bg-green-500 px-2 py-1 rounded text-black font-semibold">Available Now</span>
+                                        {{end}}
                                     </div>
                                     {{if .IMDBLink}}
                                     <div class="mt-2">
@@ -427,6 +437,7 @@
                                         data-movie-streaming="{{.Streaming}}"
                                         data-movie-notes="{{.Notes}}"
                                         data-movie-imdb="{{.IMDBLink}}"
+                                        data-movie-available-now="{{.AvailableNow}}"
                                         onclick="openEditModal(this)"
                                         class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -568,6 +579,11 @@
                         rows="3"
                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Add any notes about the movie..."></textarea>
+                </div>
+                
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" id="edit-available-now" name="available_now" class="mr-2">
+                    <label for="edit-available-now" class="text-gray-300">Available Now</label>
                 </div>
                 
                 <div class="flex justify-end space-x-4">

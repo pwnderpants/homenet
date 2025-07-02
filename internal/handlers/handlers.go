@@ -254,6 +254,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	streaming := r.FormValue("streaming")
 	notes := r.FormValue("notes")
 	imdbLink := r.FormValue("imdb_link")
+	availableNow := r.FormValue("available_now") == "on"
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
@@ -276,12 +277,13 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create new movie
 	newMovie := Movie{
-		Title:     title,
-		Year:      year,
-		Genre:     genre,
-		Streaming: streaming,
-		Notes:     notes,
-		IMDBLink:  imdbLink,
+		Title:        title,
+		Year:         year,
+		Genre:        genre,
+		Streaming:    streaming,
+		Notes:        notes,
+		IMDBLink:     imdbLink,
+		AvailableNow: availableNow,
 	}
 
 	// Add to database
@@ -331,6 +333,10 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 			movieHTML += `<span class="bg-green-600 px-2 py-1 rounded">` + movie.Streaming + `</span>`
 		}
 
+		if movie.AvailableNow {
+			movieHTML += `<span class="bg-green-500 px-2 py-1 rounded text-black font-semibold">Available Now</span>`
+		}
+
 		movieHTML += `
 					</div>`
 
@@ -353,6 +359,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 						data-movie-streaming="` + movie.Streaming + `"
 						data-movie-notes="` + movie.Notes + `"
 						data-movie-imdb="` + movie.IMDBLink + `"
+						data-movie-available-now="` + strconv.FormatBool(movie.AvailableNow) + `"
 						onclick="openEditModal(this)"
 						class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,11 +367,8 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 						</svg>
 					</button>
 					<button 
-						hx-delete="/movie-board/delete/` + strconv.Itoa(movie.ID) + `"
-						hx-target="closest div"
-						hx-swap="outerHTML"
-						hx-confirm="Are you sure you want to delete this movie?"
-						class="text-red-400 hover:text-red-300 transition-colors duration-200">
+						data-movie-id="` + strconv.Itoa(movie.ID) + `"
+						class="delete-movie-btn text-red-400 hover:text-red-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
 						</svg>
@@ -498,6 +502,10 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 			tvShowHTML += `<span class="bg-green-600 px-2 py-1 rounded">` + tvShow.Streaming + `</span>`
 		}
 
+		if tvShow.ActiveSeason {
+			tvShowHTML += `<span class="bg-yellow-500 px-2 py-1 rounded text-black font-semibold">Active Season</span>`
+		}
+
 		tvShowHTML += `
 					</div>`
 
@@ -520,6 +528,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 						data-tvshow-streaming="` + tvShow.Streaming + `"
 						data-tvshow-notes="` + tvShow.Notes + `"
 						data-tvshow-imdb="` + tvShow.IMDBLink + `"
+						data-tvshow-active-season="` + strconv.FormatBool(tvShow.ActiveSeason) + `"
 						onclick="openEditModal(this)"
 						class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,11 +536,8 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 						</svg>
 					</button>
 					<button 
-						hx-delete="/tv-shows-board/delete/` + strconv.Itoa(tvShow.ID) + `"
-						hx-target="closest div"
-						hx-swap="outerHTML"
-						hx-confirm="Are you sure you want to delete this TV show?"
-						class="text-red-400 hover:text-red-300 transition-colors duration-200">
+						data-tvshow-id="` + strconv.Itoa(tvShow.ID) + `"
+						class="delete-tvshow-btn text-red-400 hover:text-red-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
 						</svg>
@@ -648,6 +654,7 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 	streaming := r.FormValue("streaming")
 	notes := r.FormValue("notes")
 	imdbLink := r.FormValue("imdb_link")
+	availableNow := r.FormValue("available_now") == "on"
 
 	if title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
@@ -678,13 +685,14 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Update movie in database
 	updatedMovie := Movie{
-		ID:        id,
-		Title:     title,
-		Year:      year,
-		Genre:     genre,
-		Streaming: streaming,
-		Notes:     notes,
-		IMDBLink:  imdbLink,
+		ID:           id,
+		Title:        title,
+		Year:         year,
+		Genre:        genre,
+		Streaming:    streaming,
+		Notes:        notes,
+		IMDBLink:     imdbLink,
+		AvailableNow: availableNow,
 	}
 
 	err = database.UpdateMovie(updatedMovie)
@@ -730,6 +738,10 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 			movieHTML += `<span class="bg-green-600 px-2 py-1 rounded">` + movie.Streaming + `</span>`
 		}
 
+		if movie.AvailableNow {
+			movieHTML += `<span class="bg-green-500 px-2 py-1 rounded text-black font-semibold">Available Now</span>`
+		}
+
 		movieHTML += `
 					</div>`
 
@@ -752,6 +764,7 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 						data-movie-streaming="` + movie.Streaming + `"
 						data-movie-notes="` + movie.Notes + `"
 						data-movie-imdb="` + movie.IMDBLink + `"
+						data-movie-available-now="` + strconv.FormatBool(movie.AvailableNow) + `"
 						onclick="openEditModal(this)"
 						class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -759,11 +772,8 @@ func EditMovieHandler(w http.ResponseWriter, r *http.Request) {
 						</svg>
 					</button>
 					<button 
-						hx-delete="/movie-board/delete/` + strconv.Itoa(movie.ID) + `"
-						hx-target="closest div"
-						hx-swap="outerHTML"
-						hx-confirm="Are you sure you want to delete this movie?"
-						class="text-red-400 hover:text-red-300 transition-colors duration-200">
+						data-movie-id="` + strconv.Itoa(movie.ID) + `"
+						class="delete-movie-btn text-red-400 hover:text-red-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
 						</svg>
@@ -904,6 +914,10 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 			tvShowHTML += `<span class="bg-green-600 px-2 py-1 rounded">` + tvShow.Streaming + `</span>`
 		}
 
+		if tvShow.ActiveSeason {
+			tvShowHTML += `<span class="bg-yellow-500 px-2 py-1 rounded text-black font-semibold">Active Season</span>`
+		}
+
 		tvShowHTML += `
 					</div>`
 
@@ -926,6 +940,7 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 						data-tvshow-streaming="` + tvShow.Streaming + `"
 						data-tvshow-notes="` + tvShow.Notes + `"
 						data-tvshow-imdb="` + tvShow.IMDBLink + `"
+						data-tvshow-active-season="` + strconv.FormatBool(tvShow.ActiveSeason) + `"
 						onclick="openEditModal(this)"
 						class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -933,11 +948,8 @@ func EditTVShowHandler(w http.ResponseWriter, r *http.Request) {
 						</svg>
 					</button>
 					<button 
-						hx-delete="/tv-shows-board/delete/` + strconv.Itoa(tvShow.ID) + `"
-						hx-target="closest div"
-						hx-swap="outerHTML"
-						hx-confirm="Are you sure you want to delete this TV show?"
-						class="text-red-400 hover:text-red-300 transition-colors duration-200">
+						data-tvshow-id="` + strconv.Itoa(tvShow.ID) + `"
+						class="delete-tvshow-btn text-red-400 hover:text-red-300 transition-colors duration-200">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
 						</svg>
@@ -1176,21 +1188,23 @@ type FormText struct {
 	IMDBLink     string
 	Notes        string
 	ActiveSeason string
+	AvailableNow string
 }
 
 // MovieFormText defines text for movie forms
 var MovieFormText = FormText{
-	AddNew:    "Add New Movie",
-	Edit:      "Edit Movie",
-	Cancel:    "Cancel",
-	Save:      "Add Movie",
-	Delete:    "Delete",
-	Title:     "Movie Title",
-	Year:      "Year",
-	Genre:     "Genre",
-	Streaming: "Streaming Service",
-	IMDBLink:  "IMDB Link (Optional)",
-	Notes:     "Notes (Optional)",
+	AddNew:       "Add New Movie",
+	Edit:         "Edit Movie",
+	Cancel:       "Cancel",
+	Save:         "Add Movie",
+	Delete:       "Delete",
+	Title:        "Movie Title",
+	Year:         "Year",
+	Genre:        "Genre",
+	Streaming:    "Streaming Service",
+	IMDBLink:     "IMDB Link (Optional)",
+	Notes:        "Notes (Optional)",
+	AvailableNow: "Available Now",
 }
 
 // TVShowFormText defines text for TV show forms
