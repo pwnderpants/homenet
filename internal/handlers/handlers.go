@@ -111,6 +111,7 @@ var Navigation = []NavItem{
 // SetActiveNavigation sets the active state for navigation items based on current path
 func SetActiveNavigation(currentPath string) []NavItem {
 	nav := make([]NavItem, len(Navigation))
+
 	copy(nav, Navigation)
 
 	for i := range nav {
@@ -1067,17 +1068,19 @@ func RandomMovieHandler(w http.ResponseWriter, r *http.Request) {
 func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
 	// Run fortune command
-	cmd := exec.Command("fortune", "-s")
+	cmd := exec.Command("/usr/games/fortune", "-s")
 	output, err := cmd.Output()
 
 	if err != nil {
 		// If fortune command fails, return a default message
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`<p class="text-gray-300">Built with ❤️ using HTMX, Go, and Tailwind CSS</p>`))
+
 		return
 	}
 
@@ -1090,6 +1093,7 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Determine the appropriate text color based on the referer
 	referer := r.Header.Get("Referer")
+
 	var textClass string
 
 	if strings.Contains(referer, "/movie-board") || strings.Contains(referer, "/tv-shows-board") {
