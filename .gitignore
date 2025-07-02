@@ -1,10 +1,6 @@
 # Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-htmx-app
+./main
+./homenet
 
 # Test binary, built with `go test -c`
 *.test
@@ -47,8 +43,8 @@ Thumbs.db
 
 # Build artifacts
 tmp/
-*.exe
-htmx-app
+homenet
+main
 
 # IDE files
 .vscode/
