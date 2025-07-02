@@ -83,7 +83,64 @@
                     closeEditModal();
                 }
             });
+            
+            // Make sure deleteTVShow function is available globally
+            window.deleteTVShow = deleteTVShow;
+            
+            // Use event delegation for delete buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-tvshow-btn')) {
+                    const button = e.target.closest('.delete-tvshow-btn');
+                    deleteTVShow(button);
+                }
+            });
         });
+
+        function deleteTVShow(button) {
+            const tvshowId = button.getAttribute('data-tvshow-id');
+            
+            if (confirm('Are you sure you want to delete this TV show?')) {
+                fetch(`/tv-shows-board/delete/${tvshowId}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Remove the TV show card from DOM
+                        const tvshowCard = button.closest('.bg-gray-700');
+                        if (tvshowCard) {
+                            tvshowCard.remove();
+                        }
+                        
+                        // Update TV show count
+                        const tvshowCountElement = document.getElementById('tvshow-count');
+                        const currentCount = parseInt(tvshowCountElement.textContent.match(/\d+/)[0]);
+                        const newCount = currentCount - 1;
+                        
+                        if (newCount === 0) {
+                            // Show "no TV shows" message
+                            const tvshowList = document.getElementById('tvshow-list');
+                            tvshowList.innerHTML = `
+                                <div class="text-center py-8">
+                                    <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2"></path>
+                                    </svg>
+                                    <p class="text-gray-400">No TV shows added yet. Add your first TV show above!</p>
+                                </div>
+                            `;
+                            tvshowCountElement.textContent = '0 TV shows in your list';
+                        } else {
+                            tvshowCountElement.textContent = newCount + ' TV shows in your list';
+                        }
+                        
+                    } else {
+                        alert('Failed to delete TV show');
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to delete TV show: ' + error.message);
+                });
+            }
+        }
     </script>
     
     <style>
