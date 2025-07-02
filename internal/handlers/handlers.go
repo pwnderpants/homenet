@@ -34,27 +34,90 @@ var Genres = []string{
 	"Western",
 }
 
+// StreamingServices list for templating
+var StreamingServices = []string{
+	"Amazon Prime",
+	"Apple TV+",
+	"Crunchyroll",
+	"Disney+",
+	"HBO Max",
+	"Hulu",
+	"Netflix",
+	"Other",
+	"Paramount+",
+	"Peacock",
+}
+
+// YearRange for form inputs
+type YearRange struct {
+	Min int
+	Max int
+}
+
 // PageData represents the data passed to templates
 type PageData struct {
-	Title  string
-	Count  int
-	Genres []string
+	Title             string
+	Count             int
+	Genres            []string
+	StreamingServices []string
+	YearRange         YearRange
+	Navigation        []NavItem
+	FeatureCards      []FeatureCard
 }
 
 // MovieBoardData represents the data for the movie board page
 type MovieBoardData struct {
-	Title      string
-	Movies     []Movie
-	MovieCount int
-	Genres     []string
+	Title             string
+	Movies            []Movie
+	MovieCount        int
+	Genres            []string
+	StreamingServices []string
+	YearRange         YearRange
+	Navigation        []NavItem
+	FormText          FormText
+	Colors            ColorScheme
+	BadgeColors       map[string]string
 }
 
 // TVShowBoardData represents the data for the TV show board page
 type TVShowBoardData struct {
-	Title       string
-	TVShows     []TVShow
-	TVShowCount int
-	Genres      []string
+	Title             string
+	TVShows           []TVShow
+	TVShowCount       int
+	Genres            []string
+	StreamingServices []string
+	YearRange         YearRange
+	Navigation        []NavItem
+	FormText          FormText
+	Colors            ColorScheme
+	BadgeColors       map[string]string
+}
+
+// NavItem represents a navigation item
+type NavItem struct {
+	URL      string
+	Label    string
+	Icon     string // Optional SVG icon class
+	IsActive bool
+}
+
+// Navigation list for templating
+var Navigation = []NavItem{
+	{URL: "/", Label: "Home", Icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"},
+	{URL: "/movie-board", Label: "Movie Board", Icon: "M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2h4a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1h4zM9 4V3h6v1H9z"},
+	{URL: "/tv-shows-board", Label: "TV Shows Board", Icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"},
+}
+
+// SetActiveNavigation sets the active state for navigation items based on current path
+func SetActiveNavigation(currentPath string) []NavItem {
+	nav := make([]NavItem, len(Navigation))
+	copy(nav, Navigation)
+
+	for i := range nav {
+		nav[i].IsActive = nav[i].URL == currentPath
+	}
+
+	return nav
 }
 
 // HomeHandler handles the main page request
@@ -68,9 +131,13 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		Title:  "Homenet",
-		Count:  0,
-		Genres: Genres,
+		Title:             "Homenet",
+		Count:             0,
+		Genres:            Genres,
+		StreamingServices: StreamingServices,
+		YearRange:         YearRange{Min: 1900, Max: 2024},
+		Navigation:        SetActiveNavigation("/"),
+		FeatureCards:      FeatureCards,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -102,10 +169,16 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := MovieBoardData{
-		Title:      "Movie Board",
-		Movies:     movies,
-		MovieCount: len(movies),
-		Genres:     Genres,
+		Title:             "Movie Board",
+		Movies:            movies,
+		MovieCount:        len(movies),
+		Genres:            Genres,
+		StreamingServices: StreamingServices,
+		YearRange:         YearRange{Min: 1900, Max: 2024},
+		Navigation:        SetActiveNavigation("/movie-board"),
+		FormText:          MovieFormText,
+		Colors:            AppColors,
+		BadgeColors:       BadgeColors,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -137,10 +210,16 @@ func TVShowBoardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := TVShowBoardData{
-		Title:       "TV Shows Board",
-		TVShows:     tvShows,
-		TVShowCount: len(tvShows),
-		Genres:      Genres,
+		Title:             "TV Shows Board",
+		TVShows:           tvShows,
+		TVShowCount:       len(tvShows),
+		Genres:            Genres,
+		StreamingServices: StreamingServices,
+		YearRange:         YearRange{Min: 1900, Max: 2024},
+		Navigation:        SetActiveNavigation("/tv-shows-board"),
+		FormText:          TVShowFormText,
+		Colors:            AppColors,
+		BadgeColors:       BadgeColors,
 	}
 
 	err = tmpl.Execute(w, data)
@@ -1009,4 +1088,123 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(`<p class="` + textClass + `">` + fortune + `</p>`))
+}
+
+// FeatureCard represents a feature card on the homepage
+type FeatureCard struct {
+	Title       string
+	Description string
+	URL         string
+	Icon        string
+	IconColor   string // Tailwind color classes
+	ButtonColor string // Tailwind color classes
+	ButtonText  string
+}
+
+// FeatureCards list for the homepage
+var FeatureCards = []FeatureCard{
+	{
+		Title:       "Movie Board",
+		Description: "Manage your movie watchlist, add new films, and get random movie suggestions",
+		URL:         "/movie-board",
+		Icon:        "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z",
+		IconColor:   "blue",
+		ButtonColor: "blue",
+		ButtonText:  "Open Movie Board",
+	},
+	{
+		Title:       "TV Shows Board",
+		Description: "Track your favorite TV shows, manage seasons, and organize your binge-watching",
+		URL:         "/tv-shows-board",
+		Icon:        "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z",
+		IconColor:   "purple",
+		ButtonColor: "purple",
+		ButtonText:  "Open TV Shows Board",
+	},
+	{
+		Title:       "Home Assistant",
+		Description: "Control your smart devices, monitor your temps, automate your life",
+		URL:         "http://has.gotpwnd.org:8123/",
+		Icon:        "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+		IconColor:   "sky",
+		ButtonColor: "sky",
+		ButtonText:  "Open Home Assistant",
+	},
+}
+
+// ColorScheme defines consistent colors for different UI elements
+type ColorScheme struct {
+	Primary   string // Main brand color
+	Secondary string // Secondary brand color
+	Success   string // Success states
+	Warning   string // Warning states
+	Error     string // Error states
+	Info      string // Info states
+	Neutral   string // Neutral/gray colors
+}
+
+// AppColors defines the application's color scheme
+var AppColors = ColorScheme{
+	Primary:   "blue",
+	Secondary: "purple",
+	Success:   "green",
+	Warning:   "yellow",
+	Error:     "red",
+	Info:      "sky",
+	Neutral:   "gray",
+}
+
+// BadgeColors maps data types to their display colors
+var BadgeColors = map[string]string{
+	"year":      "gray",
+	"genre":     "blue",
+	"streaming": "green",
+	"active":    "yellow",
+}
+
+// FormText defines consistent form labels and text
+type FormText struct {
+	AddNew       string
+	Edit         string
+	Cancel       string
+	Save         string
+	Delete       string
+	Title        string
+	Year         string
+	Genre        string
+	Streaming    string
+	IMDBLink     string
+	Notes        string
+	ActiveSeason string
+}
+
+// MovieFormText defines text for movie forms
+var MovieFormText = FormText{
+	AddNew:    "Add New Movie",
+	Edit:      "Edit Movie",
+	Cancel:    "Cancel",
+	Save:      "Add Movie",
+	Delete:    "Delete",
+	Title:     "Movie Title",
+	Year:      "Year",
+	Genre:     "Genre",
+	Streaming: "Streaming Service",
+	IMDBLink:  "IMDB Link (Optional)",
+	Notes:     "Notes (Optional)",
+}
+
+// TVShowFormText defines text for TV show forms
+var TVShowFormText = FormText{
+	AddNew:       "Add New TV Show",
+	Edit:         "Edit TV Show",
+	Cancel:       "Cancel",
+	Save:         "Add TV Show",
+	Delete:       "Delete",
+	Title:        "TV Show Title",
+	Year:         "Year",
+	Genre:        "Genre",
+	Streaming:    "Streaming Service",
+	IMDBLink:     "IMDB Link (Optional)",
+	Notes:        "Notes (Optional)",
+	ActiveSeason: "Active Season",
 }
