@@ -106,6 +106,7 @@ var Navigation = []NavItem{
 	{URL: "/", Label: "Home", Icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"},
 	{URL: "/movie-board", Label: "Movie Board", Icon: "M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2h4a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1h4zM9 4V3h6v1H9z"},
 	{URL: "/tv-shows-board", Label: "TV Shows Board", Icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"},
+	{URL: "/ai", Label: "Homenet AI", Icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"},
 }
 
 // SetActiveNavigation sets the active state for navigation items based on current path
@@ -183,6 +184,24 @@ func MovieBoardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = tmpl.Execute(w, data)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func AiHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("web/templates/ai.html")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1145,6 +1164,15 @@ var FeatureCards = []FeatureCard{
 		IconColor:   "sky",
 		ButtonColor: "sky",
 		ButtonText:  "Open Home Assistant",
+	},
+	{
+		Title:       "Homenet AI",
+		Description: "Homenet custom AI, running locally. No data is uploaded to anywhere",
+		URL:         "/ai",
+		Icon:        "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+		IconColor:   "pink",
+		ButtonColor: "pink",
+		ButtonText:  "Open Homenet AI",
 	},
 }
 

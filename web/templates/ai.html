@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <style>
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #6B7280;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+        
+        /* Animation for form toggle */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-900 transition-colors duration-200">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-gray-800 shadow-sm border-b border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-semibold text-white">
+                            {{.Title}}
+                        </h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Navigation links -->
+                        <a href="/" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Home
+                        </a>
+                        <a href="/movie-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Movie Board
+                        </a>
+                        <a href="/tv-shows-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            TV Show Board
+                        </a>
+                        <a href="/ai" class="text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">
+                            AI Assistant
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <!-- Header section -->
+                <div class="text-center mb-8">
+                    <h2 class="text-4xl font-bold text-white mb-4">
+                        AI Assistant
+                    </h2>
+                    <p class="text-lg text-gray-300 max-w-2xl mx-auto">
+                        Ask questions and get AI-powered responses
+                    </p>
+                </div>
+
+                <!-- AI Chat Interface -->
+                <div class="bg-gray-800 rounded-lg shadow-sm border border-gray-700 p-8">
+                    <div class="flex flex-col h-96">
+                        <!-- Output/Response Area -->
+                        <div class="flex-1 bg-gray-700 rounded-lg p-4 mb-4 overflow-y-auto">
+                            <div id="ai-output" class="text-gray-300 whitespace-pre-wrap">
+                                Welcome! Ask me anything and I'll help you out.
+                            </div>
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <textarea 
+                                    id="ai-input"
+                                    name="prompt"
+                                    rows="3"
+                                    placeholder="Type your question here..."
+                                    class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                ></textarea>
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <button 
+                                    id="send-button"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                                    onclick="sendMessage()">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                    <span>Send</span>
+                                </button>
+                                <button 
+                                    id="clear-button"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                                    onclick="clearChat()">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span>Clear</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 border-t border-gray-700 mt-12">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-gray-300">
+                        Built with ❤️ using HTMX, Go, and Tailwind CSS
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('ai-input');
+            const output = document.getElementById('ai-output');
+            const sendButton = document.getElementById('send-button');
+            
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Disable button and show loading state
+            sendButton.disabled = true;
+            sendButton.innerHTML = `
+                <svg class="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>Processing...</span>
+            `;
+            
+            // Add user message to output
+            output.innerHTML += `\n\n<b class="text-blue-400">You:</b> ${message}\n\n<b class="text-green-400">AI:</b> `;
+            
+            // Clear input
+            input.value = '';
+            
+            // Simulate AI response (replace with actual API call)
+            setTimeout(() => {
+                const response = `This is a placeholder response. In a real implementation, you would integrate with an AI API here.\n\nYou can customize this response based on your needs.`;
+                output.innerHTML += response;
+                
+                // Re-enable button
+                sendButton.disabled = false;
+                sendButton.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    <span>Send</span>
+                `;
+                
+                // Scroll to bottom
+                output.scrollTop = output.scrollHeight;
+            }, 1000);
+        }
+        
+        function clearChat() {
+            const output = document.getElementById('ai-output');
+            output.innerHTML = 'Welcome! Ask me anything and I\'ll help you out.';
+        }
+        
+        // Allow Enter key to send message (Shift+Enter for new line)
+        document.getElementById('ai-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Auto-resize textarea
+        document.getElementById('ai-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    </script>
+</body>
+</html> 

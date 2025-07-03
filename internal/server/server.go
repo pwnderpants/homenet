@@ -35,20 +35,27 @@ func (s *Server) SetupRoutes() {
 
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	// Handle routes
+	// Handle main routes
 	http.HandleFunc("/", handlers.HomeHandler)
+
+	// Movie board routes
 	http.HandleFunc("/movie-board", handlers.MovieBoardHandler)
 	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
 	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
-	http.HandleFunc("/fortune", handlers.FortuneHandler)
 
-	// TV Shows Board routes
+	// TV Shows board routes
 	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
 	http.HandleFunc("/tv-shows-board/add", handlers.AddTVShowHandler)
 	http.HandleFunc("/tv-shows-board/edit", handlers.EditTVShowHandler)
 	http.HandleFunc("/tv-shows-board/delete/", handlers.DeleteTVShowHandler)
+
+	// Fortune route
+	http.HandleFunc("/fortune", handlers.FortuneHandler)
+
+	// AI routes
+	http.HandleFunc("/ai", handlers.AiHandler)
 }
 
 // StartServer initializes and starts the HTTP server
