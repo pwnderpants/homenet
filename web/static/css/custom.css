@@ -25,4 +25,151 @@ select:focus,
 textarea:focus {
     outline: 2px solid #60a5fa;
     outline-offset: 2px;
+}
+
+/* Animation for form toggle and modals */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Modal content styles */
+.modal-content {
+    background: #374151;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Form transition styles */
+.form-transition {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Button hover effects */
+.btn-hover {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Loading spinner animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Text selection styles */
+::selection {
+    background-color: #60a5fa;
+    color: white;
+}
+
+::-moz-selection {
+    background-color: #60a5fa;
+    color: white;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom input styles */
+.custom-input {
+    background-color: #374151;
+    border: 1px solid #4B5563;
+    color: white;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.custom-input::placeholder {
+    color: #9CA3AF;
+}
+
+/* Custom button styles */
+.btn-primary {
+    background-color: #2563EB;
+    color: white;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #1D4ED8;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #4B5563;
+    color: white;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+    background-color: #374151;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: #DC2626;
+    color: white;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-danger:hover {
+    background-color: #B91C1C;
+    transform: translateY(-1px);
 } 
