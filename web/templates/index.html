@@ -24,21 +24,23 @@
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
                         <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            {{.Title}}
+                            Homenet
                         </h1>
                     </div>
                     
                     <div class="flex items-center space-x-4">
                         <!-- Navigation links -->
-                        <a href="/movie-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                            Movie Board
+                        {{range .Navigation}}
+                        <a href="{{.URL}}" 
+                           class="{{if .IsActive}}text-white bg-gray-700{{else}}text-gray-300 hover:text-white{{end}} px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2">
+                            {{if .Icon}}
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="{{.Icon}}" clip-rule="evenodd"></path>
+                            </svg>
+                            {{end}}
+                            <span>{{.Label}}</span>
                         </a>
-                        <a href="/tv-shows-board" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                            TV Shows Board
-                        </a>
-                        <a href="/ai" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                            Homenet AI
-                        </a>
+                        {{end}}
                     </div>
                 </div>
             </div>
