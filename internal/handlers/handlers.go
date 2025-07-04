@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"os/exec"
@@ -8,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/pwnderpants/homenet/internal/database"
+	"github.com/pwnderpants/homenet/internal/logger"
 )
 
 // Use the Movie struct from database package
@@ -173,6 +175,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 
 	if err != nil {
+		logger.ErrorWithErr("Form parsing error in AddMovieHandler", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
@@ -187,6 +190,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	availableNow := r.FormValue("available_now") == "on"
 
 	if title == "" {
+		logger.Warn("Empty movie title received")
 		http.Error(w, "Title is required", http.StatusBadRequest)
 
 		return
@@ -199,11 +203,14 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 		year, err = strconv.Atoi(yearStr)
 
 		if err != nil {
+			logger.ErrorWithErr("Invalid year format in AddMovieHandler", err)
 			http.Error(w, "Invalid year", http.StatusBadRequest)
 
 			return
 		}
 	}
+
+	logger.Info("Adding new movie: %s (%d) - Genre: %s, Streaming: %s", title, year, genre, streaming)
 
 	// Create new movie
 	newMovie := Movie{
@@ -220,6 +227,7 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	movieID, err := database.AddMovie(newMovie)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to add movie to database", err)
 		http.Error(w, "Failed to add movie: "+err.Error(), http.StatusInternalServerError)
 
 		return
@@ -232,10 +240,13 @@ func AddMovieHandler(w http.ResponseWriter, r *http.Request) {
 	allMovies, err := database.GetAllMovies()
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to get all movies after adding", err)
 		http.Error(w, "Failed to get movies: "+err.Error(), http.StatusInternalServerError)
 
 		return
 	}
+
+	logger.Info("Movie added successfully, total movies: %d", len(allMovies))
 
 	// Return the complete movie list HTML for HTMX to replace
 	w.Header().Set("Content-Type", "text/html")
@@ -342,6 +353,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 
 	if err != nil {
+		logger.ErrorWithErr("Form parsing error in AddTVShowHandler", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
@@ -356,6 +368,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	activeSeason := r.FormValue("active_season") == "on"
 
 	if title == "" {
+		logger.Warn("Empty TV show title received")
 		http.Error(w, "Title is required", http.StatusBadRequest)
 
 		return
@@ -368,11 +381,14 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 		year, err = strconv.Atoi(yearStr)
 
 		if err != nil {
+			logger.ErrorWithErr("Invalid year format in AddTVShowHandler", err)
 			http.Error(w, "Invalid year", http.StatusBadRequest)
 
 			return
 		}
 	}
+
+	logger.Info("Adding new TV show: %s (%d) - Genre: %s, Streaming: %s, Active Season: %t", title, year, genre, streaming, activeSeason)
 
 	// Create new TV show
 	newTVShow := TVShow{
@@ -389,6 +405,7 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	tvShowID, err := database.AddTVShow(newTVShow)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to add TV show to database", err)
 		http.Error(w, "Failed to add TV show: "+err.Error(), http.StatusInternalServerError)
 
 		return
@@ -401,10 +418,13 @@ func AddTVShowHandler(w http.ResponseWriter, r *http.Request) {
 	allTVShows, err := database.GetAllTVShows()
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to get all TV shows after adding", err)
 		http.Error(w, "Failed to get TV shows: "+err.Error(), http.StatusInternalServerError)
 
 		return
 	}
+
+	logger.Info("TV show added successfully, total TV shows: %d", len(allTVShows))
 
 	// Return the complete TV show list HTML for HTMX to replace
 	w.Header().Set("Content-Type", "text/html")
@@ -1033,4 +1053,124 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(`<p class="` + textClass + `">` + fortune + `</p>`))
+}
+
+// AIQueryHandler handles AI queries using Ollama
+func AIQueryHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	// Parse form data
+	err := r.ParseForm()
+
+	if err != nil {
+		logger.ErrorWithErr("Form parsing error in AI query", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
+
+	query := r.FormValue("prompt")
+
+	if query == "" {
+		logger.Warn("Empty AI query received")
+		http.Error(w, "Query is required", http.StatusBadRequest)
+
+		return
+	}
+
+	logger.Info("Received AI query: %s", query)
+
+	// Call Ollama API
+	response, err := OllamaQuery(query, "llama3.2:latest", "http://chadgpt.gotpwnd.org:11434")
+
+	if err != nil {
+		logger.ErrorWithErr("Ollama query error", err)
+		// Return error message as HTML with more details
+		w.Header().Set("Content-Type", "text/html")
+
+		errorHTML := `
+		<div class="text-red-400 mb-4">
+			<strong>Error:</strong> Failed to get AI response.<br>
+			<strong>Details:</strong> ` + template.HTMLEscapeString(err.Error()) + `<br>
+			<strong>Query:</strong> ` + template.HTMLEscapeString(query) + `
+		</div>`
+
+		w.Write([]byte(errorHTML))
+
+		return
+	}
+
+	logger.Info("AI query completed successfully, response length: %d characters", len(response))
+
+	// Return the response as plain text (HTML will be escaped by JavaScript)
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(response))
+}
+
+// formatAIResponse formats the AI response for HTML display
+func formatAIResponse(response string) string {
+	// Escape HTML characters to prevent XSS
+	response = template.HTMLEscapeString(response)
+
+	// Convert newlines to <br> tags for proper HTML formatting
+	response = strings.ReplaceAll(response, "\n", "<br>")
+
+	// Add some basic styling
+	formattedHTML := `
+	<div class="text-gray-300 mb-4">
+		` + response + `
+	</div>`
+
+	return formattedHTML
+}
+
+// AIQueryStreamHandler handles streaming AI queries using Ollama
+func AIQueryStreamHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	// Parse form data
+	err := r.ParseForm()
+
+	if err != nil {
+		logger.ErrorWithErr("Form parsing error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
+
+	query := r.FormValue("prompt")
+
+	if query == "" {
+		logger.Warn("Empty query received")
+		http.Error(w, "Query is required", http.StatusBadRequest)
+
+		return
+	}
+
+	logger.Info("Received streaming query: %s", query)
+
+	// Stream the response from Ollama
+	err = OllamaQueryStream(w, query, "gemma3:4b", "http://chadgpt.gotpwnd.org:11434")
+
+	if err != nil {
+		logger.ErrorWithErr("Ollama streaming error", err)
+		// Send error as SSE
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Connection", "keep-alive")
+
+		fmt.Fprintf(w, "data: [ERROR] %s\n\n", template.HTMLEscapeString(err.Error()))
+
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pwnderpants/homenet/internal/logger"
 )
 
 type Movie struct {
@@ -35,10 +36,14 @@ var db *sql.DB
 
 // InitDB initializes the SQLite database
 func InitDB() error {
+	logger.Info("Initializing database...")
+
 	// Get user home directory
 	homeDir, err := os.UserHomeDir()
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to get home directory", err)
+
 		return fmt.Errorf("failed to get home directory: %w", err)
 	}
 
@@ -46,16 +51,22 @@ func InitDB() error {
 	dataDir := filepath.Join(homeDir, ".local", "share", "homenet", "data")
 
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		logger.ErrorWithErr("Failed to create data directory", err)
+
 		return fmt.Errorf("failed to create data directory: %w", err)
 	}
 
 	// Database file path
 	dbPath := filepath.Join(dataDir, "movies.db")
 
+	logger.Info("Database path: %s", dbPath)
+
 	// Open database
 	db, err = sql.Open("sqlite3", dbPath)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to open database", err)
+
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 
@@ -99,14 +110,20 @@ func InitDB() error {
 	_, err = db.Exec(createMoviesTableSQL)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to create movies table", err)
+
 		return fmt.Errorf("failed to create movies table: %w", err)
 	}
 
 	_, err = db.Exec(createTVShowsTableSQL)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to create tv_shows table", err)
+
 		return fmt.Errorf("failed to create tv_shows table: %w", err)
 	}
+
+	logger.Info("Database initialized successfully")
 
 	return nil
 }
@@ -147,6 +164,8 @@ func GetAllMovies() ([]Movie, error) {
 
 // AddMovie adds a new movie to the database and returns the ID
 func AddMovie(movie Movie) (int, error) {
+	logger.Info("Adding movie: %s (%d)", movie.Title, movie.Year)
+
 	query := `
 	INSERT INTO movies (title, year, genre, streaming, notes, imdb_link, available_now)
 	VALUES (?, ?, ?, ?, ?, ?, ?)`
@@ -154,26 +173,37 @@ func AddMovie(movie Movie) (int, error) {
 	result, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink, boolToInt(movie.AvailableNow))
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to insert movie", err)
+
 		return 0, fmt.Errorf("failed to insert movie: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to get last insert id", err)
 		return 0, fmt.Errorf("failed to get last insert id: %w", err)
 	}
+
+	logger.Info("Movie added successfully with ID: %d", id)
 
 	return int(id), nil
 }
 
 // DeleteMovie deletes a movie by ID
 func DeleteMovie(id int) error {
+	logger.Info("Deleting movie with ID: %d", id)
+
 	query := "DELETE FROM movies WHERE id = ?"
 	_, err := db.Exec(query, id)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to delete movie", err)
+
 		return fmt.Errorf("failed to delete movie: %w", err)
 	}
+
+	logger.Info("Movie deleted successfully")
 
 	return nil
 }
@@ -193,6 +223,8 @@ func GetMovieCount() (int, error) {
 
 // UpdateMovie updates an existing movie in the database
 func UpdateMovie(movie Movie) error {
+	logger.Info("Updating movie with ID: %d, title: %s", movie.ID, movie.Title)
+
 	query := `
 	UPDATE movies 
 	SET title = ?, year = ?, genre = ?, streaming = ?, notes = ?, imdb_link = ?, available_now = ?
@@ -201,8 +233,12 @@ func UpdateMovie(movie Movie) error {
 	_, err := db.Exec(query, movie.Title, movie.Year, movie.Genre, movie.Streaming, movie.Notes, movie.IMDBLink, boolToInt(movie.AvailableNow), movie.ID)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to update movie", err)
+
 		return fmt.Errorf("failed to update movie: %w", err)
 	}
+
+	logger.Info("Movie updated successfully")
 
 	return nil
 }
@@ -254,6 +290,8 @@ func GetAllTVShows() ([]TVShow, error) {
 
 // AddTVShow adds a new TV show to the database and returns the ID
 func AddTVShow(tvShow TVShow) (int, error) {
+	logger.Info("Adding TV show: %s (%d)", tvShow.Title, tvShow.Year)
+
 	query := `
 	INSERT INTO tv_shows (title, year, genre, streaming, notes, imdb_link, active_season)
 	VALUES (?, ?, ?, ?, ?, ?, ?)`
@@ -261,27 +299,38 @@ func AddTVShow(tvShow TVShow) (int, error) {
 	result, err := db.Exec(query, tvShow.Title, tvShow.Year, tvShow.Genre, tvShow.Streaming, tvShow.Notes, tvShow.IMDBLink, boolToInt(tvShow.ActiveSeason))
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to insert tv show", err)
+
 		return 0, fmt.Errorf("failed to insert tv show: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to get last insert id", err)
+
 		return 0, fmt.Errorf("failed to get last insert id: %w", err)
 	}
+
+	logger.Info("TV show added successfully with ID: %d", id)
 
 	return int(id), nil
 }
 
 // DeleteTVShow deletes a TV show by ID
 func DeleteTVShow(id int) error {
+	logger.Info("Deleting TV show with ID: %d", id)
+
 	query := "DELETE FROM tv_shows WHERE id = ?"
 	_, err := db.Exec(query, id)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to delete tv show", err)
+
 		return fmt.Errorf("failed to delete tv show: %w", err)
 	}
 
+	logger.Info("TV show deleted successfully")
 	return nil
 }
 
@@ -300,6 +349,8 @@ func GetTVShowCount() (int, error) {
 
 // UpdateTVShow updates an existing TV show in the database
 func UpdateTVShow(tvShow TVShow) error {
+	logger.Info("Updating TV show with ID: %d, title: %s", tvShow.ID, tvShow.Title)
+
 	query := `
 	UPDATE tv_shows 
 	SET title = ?, year = ?, genre = ?, streaming = ?, notes = ?, imdb_link = ?, active_season = ?
@@ -308,8 +359,12 @@ func UpdateTVShow(tvShow TVShow) error {
 	_, err := db.Exec(query, tvShow.Title, tvShow.Year, tvShow.Genre, tvShow.Streaming, tvShow.Notes, tvShow.IMDBLink, boolToInt(tvShow.ActiveSeason), tvShow.ID)
 
 	if err != nil {
+		logger.ErrorWithErr("Failed to update tv show", err)
+
 		return fmt.Errorf("failed to update tv show: %w", err)
 	}
+
+	logger.Info("TV show updated successfully")
 
 	return nil
 }

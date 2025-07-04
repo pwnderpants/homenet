@@ -3,10 +3,11 @@ package templates
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/pwnderpants/homenet/internal/logger"
 )
 
 // Templates holds all application templates
@@ -40,7 +41,7 @@ func (t *Templates) LoadTemplates() error {
 
 			t.templates[name] = tmpl
 
-			log.Printf("Loaded template: %s", name)
+			logger.Info("Loaded template: %s", name)
 		}
 
 		return nil

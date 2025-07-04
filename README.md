@@ -10,6 +10,7 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 - 🌙 **Dark Theme**: Fixed dark theme design
 - 📱 **Responsive Design**: Mobile-first responsive layout
 - 🎬 **Movie Board**: Interactive movie list management with HTMX
+- 📝 **Structured Logging**: Comprehensive logging system with configurable levels
 
 ## Project Structure
 
@@ -20,14 +21,25 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 │       └── main.go      # Application entry point
 ├── internal/
 │   ├── handlers/
-│   │   └── handlers.go  # HTTP request handlers
+│   │   ├── handlers.go  # HTTP request handlers
+│   │   ├── ollama.go    # Ollama AI integration
+│   │   ├── types.go     # Data structures
+│   │   └── declarations.go # Constants and configurations
+│   ├── database/
+│   │   └── database.go  # Database operations
+│   ├── logger/
+│   │   └── logger.go    # Structured logging system
 │   ├── server/
-│   │   └── server.go    # Server configuration
+│   │   ├── server.go    # Server configuration
+│   │   └── declarations.go # Server types
 │   └── templates/
 │       └── templates.go # Template management
 ├── web/
 │   ├── templates/
-│   │   └── index.html   # HTML templates
+│   │   ├── index.html   # Homepage template
+│   │   ├── movie-board.html # Movie management
+│   │   ├── tv-shows-board.html # TV show management
+│   │   └── ai.html      # AI chat interface
 │   └── static/
 │       ├── css/
 │       │   └── custom.css
@@ -57,6 +69,35 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
    http://localhost:8080
    ```
 
+## Configuration
+
+### Logging
+
+The application includes a comprehensive logging system with configurable levels:
+
+- **DEBUG**: Detailed debug information
+- **INFO**: General information about application flow
+- **WARN**: Warning messages for potentially harmful situations
+- **ERROR**: Error messages for error conditions
+
+Set the log level using the `LOG_LEVEL` environment variable:
+
+```bash
+# Set log level to DEBUG for development
+LOG_LEVEL=DEBUG go run cmd/server/main.go
+
+# Set log level to ERROR for production
+LOG_LEVEL=ERROR go run cmd/server/main.go
+```
+
+### Port Configuration
+
+Set a custom port using the `PORT` environment variable:
+
+```bash
+PORT=3000 go run cmd/server/main.go
+```
+
 ## Usage
 
 ### Development
@@ -77,10 +118,10 @@ For production deployment:
 
 ```bash
 # Build the binary
-go build -o htmx-app cmd/server/main.go
+go build -o homenet cmd/server/main.go
 
 # Run the binary
-./htmx-app
+./homenet
 ```
 
 You can also set a custom port using the `PORT` environment variable:
@@ -113,6 +154,70 @@ The application demonstrates HTMX functionality with the Movie Board:
 - **Dark Mode Variants**: Automatic dark mode styling with `dark:` prefix
 - **Responsive Design**: Mobile-first responsive breakpoints
 - **Custom Styling**: Custom scrollbar styling for dark mode
+
+### Structured Logging
+
+The application includes a comprehensive logging system that tracks:
+
+- **Database Operations**: Movie and TV show additions, updates, and deletions
+- **AI Queries**: Ollama API requests and responses
+- **Template Loading**: Template compilation and loading
+- **Server Events**: Server startup and configuration
+- **Error Handling**: Detailed error logging with context
+
+Log messages include timestamps and log levels for easy debugging and monitoring.
+
+#### Backend Logging (Go)
+
+Set the log level using the `LOG_LEVEL` environment variable:
+
+```bash
+# Set log level to DEBUG for development
+LOG_LEVEL=DEBUG go run cmd/server/main.go
+
+# Set log level to ERROR for production
+LOG_LEVEL=ERROR go run cmd/server/main.go
+```
+
+#### Frontend Logging (JavaScript)
+
+The application also includes structured logging in the browser console for all JavaScript operations:
+
+- **AI Chat Interface**: Request/response tracking, error handling, UI state changes
+- **Movie Board**: Form interactions, CRUD operations, modal management
+- **TV Shows Board**: Form interactions, CRUD operations, modal management
+
+Configure frontend logging using URL parameters or localStorage:
+
+```javascript
+// Set via URL parameter
+http://localhost:8080/ai?log=DEBUG
+http://localhost:8080/movie-board?log=WARN
+http://localhost:8080/tv-shows-board?log=ERROR
+
+// Or set programmatically in browser console
+localStorage.setItem('ai_log_level', 'DEBUG');
+localStorage.setItem('movie_log_level', 'INFO');
+localStorage.setItem('tvshow_log_level', 'WARN');
+```
+
+**Available Log Levels:**
+- `DEBUG`: Detailed debug information (form interactions, DOM updates)
+- `INFO`: General information about user actions and operations
+- `WARN`: Warning messages for potentially problematic situations
+- `ERROR`: Error messages for failed operations
+
+**Sample Frontend Log Output:**
+```
+[2024-07-25T17:11:17.123Z] INFO: AI chat interface initializing...
+[2024-07-25T17:11:17.125Z] INFO: AI chat interface initialized successfully
+[2024-07-25T17:11:20.456Z] INFO: Form submitted with message: What is Go?
+[2024-07-25T17:11:20.458Z] INFO: Starting AI request for message: What is Go?
+[2024-07-25T17:11:20.460Z] INFO: Sending request to /ai/query with message: What is Go?
+[2024-07-25T17:11:22.789Z] DEBUG: Response received, status: 200
+[2024-07-25T17:11:22.790Z] DEBUG: Raw response received, length: 1250
+[2024-07-25T17:11:22.791Z] INFO: AI response displayed successfully
+```
 
 ## Customization
 
@@ -162,8 +267,6 @@ The application includes a comprehensive movie management system:
 - **In-Memory Storage**: Simple storage for demo purposes
 
 To customize the movie board, modify the handlers in `internal/handlers/handlers.go`.
-
-
 
 ## Technologies Used
 

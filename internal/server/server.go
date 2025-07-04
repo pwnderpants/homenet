@@ -2,12 +2,12 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/pwnderpants/homenet/internal/database"
 	"github.com/pwnderpants/homenet/internal/handlers"
+	"github.com/pwnderpants/homenet/internal/logger"
 )
 
 // New creates a new server instance
@@ -51,6 +51,7 @@ func (s *Server) SetupRoutes() {
 
 	// AI routes
 	http.HandleFunc("/ai", handlers.AiHandler)
+	http.HandleFunc("/ai/query", handlers.AIQueryHandler)
 }
 
 // StartServer initializes and starts the HTTP server
@@ -65,6 +66,6 @@ func StartServer(port string) error {
 	server.SetupRoutes()
 
 	// Start server
-	log.Printf("Server starting on http://localhost:%s", port)
+	logger.Info("Server starting on http://localhost:%s", port)
 	return http.ListenAndServe(server.addr, nil)
 }
