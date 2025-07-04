@@ -1,6 +1,7 @@
 # Binaries for programs and plugins
 ./main
 ./homenet
+./server
 
 # Test binary, built with `go test -c`
 *.test
@@ -45,6 +46,7 @@ Thumbs.db
 tmp/
 homenet
 main
+server
 
 # IDE files
 .vscode/
