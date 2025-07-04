@@ -10,11 +10,6 @@ import (
 	"github.com/pwnderpants/homenet/internal/handlers"
 )
 
-// Server represents the HTTP server
-type Server struct {
-	addr string
-}
-
 // New creates a new server instance
 func New() *Server {
 	port := os.Getenv("PORT")
