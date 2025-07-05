@@ -2,16 +2,23 @@ package main
 
 import (
 	"log"
-	"os"
 	"strings"
 
+	"github.com/pwnderpants/homenet/internal/config"
 	"github.com/pwnderpants/homenet/internal/logger"
 	"github.com/pwnderpants/homenet/internal/server"
 )
 
 func main() {
-	// Configure logging level from environment variable
-	logLevel := strings.ToUpper(os.Getenv("LOG_LEVEL"))
+	// Load configuration
+	cfg, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
+	// Configure logging level from config
+	logLevel := strings.ToUpper(cfg.Logging.Level)
 
 	switch logLevel {
 	case "DEBUG":
@@ -31,15 +38,8 @@ func main() {
 		log.Println("Log level set to INFO (default)")
 	}
 
-	// Get port from environment variable or use default
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		port = "8080"
-	}
-
-	// Start the server
-	if err := server.StartServer(port); err != nil {
+	// Start the server with configured port
+	if err := server.StartServer(cfg.Server.Port); err != nil {
 		log.Fatal(err)
 	}
 }

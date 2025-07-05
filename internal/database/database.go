@@ -34,22 +34,11 @@ type TVShow struct {
 
 var db *sql.DB
 
-// InitDB initializes the SQLite database
-func InitDB() error {
+// InitDB initializes the database connection and creates tables if they don't exist
+func InitDB(dataDir, dbName string) error {
 	logger.Info("Initializing database...")
 
-	// Get user home directory
-	homeDir, err := os.UserHomeDir()
-
-	if err != nil {
-		logger.ErrorWithErr("Failed to get home directory", err)
-
-		return fmt.Errorf("failed to get home directory: %w", err)
-	}
-
 	// Create data directory
-	dataDir := filepath.Join(homeDir, ".local", "share", "homenet", "data")
-
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		logger.ErrorWithErr("Failed to create data directory", err)
 
@@ -57,11 +46,12 @@ func InitDB() error {
 	}
 
 	// Database file path
-	dbPath := filepath.Join(dataDir, "movies.db")
+	dbPath := filepath.Join(dataDir, dbName+".db")
 
 	logger.Info("Database path: %s", dbPath)
 
 	// Open database
+	var err error
 	db, err = sql.Open("sqlite3", dbPath)
 
 	if err != nil {

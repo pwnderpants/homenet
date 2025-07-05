@@ -11,6 +11,7 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 - 📱 **Responsive Design**: Mobile-first responsive layout
 - 🎬 **Movie Board**: Interactive movie list management with HTMX
 - 📝 **Structured Logging**: Comprehensive logging system with configurable levels
+- ⚙️ **Configuration System**: JSON-based configuration file with automatic defaults
 
 ## Project Structure
 
@@ -20,6 +21,8 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 │   └── server/
 │       └── main.go      # Application entry point
 ├── internal/
+│   ├── config/
+│   │   └── config.go    # Configuration management
 │   ├── handlers/
 │   │   ├── handlers.go  # HTTP request handlers
 │   │   ├── ollama.go    # Ollama AI integration
@@ -71,31 +74,66 @@ A modern web application boilerplate built with HTMX for dynamic interactions, G
 
 ## Configuration
 
-### Logging
+The application uses a JSON configuration file located at `~/.config/homenet/config.json`. This file is automatically created with default values when the application starts for the first time.
 
-The application includes a comprehensive logging system with configurable levels:
+### Configuration File Location
 
-- **DEBUG**: Detailed debug information
-- **INFO**: General information about application flow
-- **WARN**: Warning messages for potentially harmful situations
-- **ERROR**: Error messages for error conditions
-
-Set the log level using the `LOG_LEVEL` environment variable:
-
-```bash
-# Set log level to DEBUG for development
-LOG_LEVEL=DEBUG go run cmd/server/main.go
-
-# Set log level to ERROR for production
-LOG_LEVEL=ERROR go run cmd/server/main.go
+```
+~/.config/homenet/config.json
 ```
 
-### Port Configuration
+### Default Configuration
 
-Set a custom port using the `PORT` environment variable:
+```json
+{
+  "ollama": {
+    "host": "http://chadgpt.gotpwnd.org:11434",
+    "model_name": "llama3.2:latest"
+  },
+  "logging": {
+    "level": "INFO"
+  },
+  "server": {
+    "port": "8080"
+  }
+}
+```
 
-```bash
-PORT=3000 go run cmd/server/main.go
+### Configuration Options
+
+#### Ollama Settings
+- **`ollama.host`**: The Ollama server URL (default: `http://chadgpt.gotpwnd.org:11434`)
+- **`ollama.model_name`**: The Ollama model to use for AI queries (default: `llama3.2:latest`)
+
+#### Logging Settings
+- **`logging.level`**: Log level for the application
+  - `DEBUG`: Detailed debug information
+  - `INFO`: General information about application flow
+  - `WARN`: Warning messages for potentially harmful situations
+  - `ERROR`: Error messages for error conditions
+
+#### Server Settings
+- **`server.port`**: Port number for the web server (default: `8080`)
+
+### Modifying Configuration
+
+Simply edit the `~/.config/homenet/config.json` file to change any settings. The application will read the updated configuration on the next startup.
+
+Example configuration changes:
+
+```json
+{
+  "ollama": {
+    "host": "http://localhost:11434",
+    "model_name": "llama3.1:latest"
+  },
+  "logging": {
+    "level": "DEBUG"
+  },
+  "server": {
+    "port": "3000"
+  }
+}
 ```
 
 ## Usage
@@ -124,11 +162,7 @@ go build -o homenet cmd/server/main.go
 ./homenet
 ```
 
-You can also set a custom port using the `PORT` environment variable:
-
-```bash
-PORT=3000 go run cmd/server/main.go
-```
+The server will use the port specified in your configuration file (`~/.config/homenet/config.json`).
 
 ## Features Explained
 
@@ -155,6 +189,21 @@ The application demonstrates HTMX functionality with the Movie Board:
 - **Responsive Design**: Mobile-first responsive breakpoints
 - **Custom Styling**: Custom scrollbar styling for dark mode
 
+### Configuration System
+
+The application uses a JSON-based configuration system that automatically creates a default configuration file at `~/.config/homenet/config.json` on first run. This system provides:
+
+- **Automatic Setup**: Creates configuration directory and file if they don't exist
+- **Default Values**: Sensible defaults for all configuration options
+- **Runtime Configuration**: No need to recompile to change settings
+- **Centralized Settings**: All application settings in one place
+
+The configuration system supports:
+- **Ollama Integration**: Host URL and model name configuration
+- **Logging Levels**: Configurable log verbosity
+- **Server Settings**: Port and other server configuration
+- **Extensible Design**: Easy to add new configuration options
+
 ### Structured Logging
 
 The application includes a comprehensive logging system that tracks:
@@ -169,15 +218,14 @@ Log messages include timestamps and log levels for easy debugging and monitoring
 
 #### Backend Logging (Go)
 
-Set the log level using the `LOG_LEVEL` environment variable:
+The log level is configured in the `~/.config/homenet/config.json` file under the `logging.level` field. Available levels are:
 
-```bash
-# Set log level to DEBUG for development
-LOG_LEVEL=DEBUG go run cmd/server/main.go
+- `DEBUG`: Detailed debug information
+- `INFO`: General information about application flow  
+- `WARN`: Warning messages for potentially harmful situations
+- `ERROR`: Error messages for error conditions
 
-# Set log level to ERROR for production
-LOG_LEVEL=ERROR go run cmd/server/main.go
-```
+To change the log level, edit the configuration file and restart the application.
 
 #### Frontend Logging (JavaScript)
 

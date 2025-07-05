@@ -3,8 +3,8 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
 
+	"github.com/pwnderpants/homenet/internal/config"
 	"github.com/pwnderpants/homenet/internal/database"
 	"github.com/pwnderpants/homenet/internal/handlers"
 	"github.com/pwnderpants/homenet/internal/logger"
@@ -12,26 +12,22 @@ import (
 
 // Server represents the HTTP server
 type Server struct {
-	addr string
+	addr   string
+	config *config.Config
 }
 
 // New creates a new server instance
-func New() *Server {
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		port = "8080"
-	}
-
+func New(cfg *config.Config) *Server {
 	return &Server{
-		addr: ":" + port,
+		addr:   ":" + cfg.Server.Port,
+		config: cfg,
 	}
 }
 
 // SetupRoutes configures all the routes for the server
 func (s *Server) SetupRoutes() {
 	// Serve static files
-	fs := http.FileServer(http.Dir("web/static"))
+	fs := http.FileServer(http.Dir(s.config.Static.Dir))
 
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -52,25 +48,49 @@ func (s *Server) SetupRoutes() {
 	http.HandleFunc("/tv-shows-board/delete/", handlers.DeleteTVShowHandler)
 
 	// Fortune route
-	http.HandleFunc("/fortune", handlers.FortuneHandler)
+	http.HandleFunc("/fortune", s.createFortuneHandler())
 
 	// AI routes
 	http.HandleFunc("/ai", handlers.AiHandler)
-	http.HandleFunc("/ai/query", handlers.AIQueryHandler)
+	http.HandleFunc("/ai/query", s.createAIQueryHandler())
+}
+
+// createAIQueryHandler creates a handler that uses the server's configuration
+func (s *Server) createAIQueryHandler() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		handlers.AIQueryHandlerWithConfig(w, r, s.config)
+	}
+}
+
+// createFortuneHandler creates a handler that uses the server's configuration
+func (s *Server) createFortuneHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handlers.FortuneHandlerWithConfig(w, r, s.config)
+	}
 }
 
 // StartServer initializes and starts the HTTP server
 func StartServer(port string) error {
-	// Initialize database
-	if err := database.InitDB(); err != nil {
+	// Load configuration
+	cfg, err := config.LoadConfig()
+
+	if err != nil {
+		return fmt.Errorf("failed to load configuration: %w", err)
+	}
+
+	// Initialize database with configuration
+	if err := database.InitDB(cfg.Database.DataDir, cfg.Database.DBName); err != nil {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
 	// Create server instance and set up routes
-	server := New()
+	server := New(cfg)
+
 	server.SetupRoutes()
 
 	// Start server
-	logger.Info("Server starting on http://localhost:%s", port)
+	logger.Info("Server starting on http://%s:%s", cfg.Server.Host, port)
+
 	return http.ListenAndServe(server.addr, nil)
 }

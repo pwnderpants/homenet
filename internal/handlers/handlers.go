@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pwnderpants/homenet/internal/config"
 	"github.com/pwnderpants/homenet/internal/database"
 	"github.com/pwnderpants/homenet/internal/logger"
 )
@@ -1012,7 +1013,49 @@ func RandomMovieHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(movieHTML))
 }
 
-// FortuneHandler handles getting a fortune
+// FortuneHandlerWithConfig handles getting a fortune with configuration
+func FortuneHandlerWithConfig(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	// Run fortune command with configuration
+	cmd := exec.Command(cfg.Fortune.Command, cfg.Fortune.Args)
+	output, err := cmd.Output()
+
+	if err != nil {
+		// If fortune command fails, return configured fallback message
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<p class="text-gray-300">` + cfg.Fortune.FallbackMsg + `</p>`))
+
+		return
+	}
+
+	// Clean the output and return as HTML
+	fortune := strings.TrimSpace(string(output))
+
+	if fortune == "" {
+		fortune = cfg.Fortune.FallbackMsg
+	}
+
+	// Determine the appropriate text color based on the referer
+	referer := r.Header.Get("Referer")
+
+	var textClass string
+
+	if strings.Contains(referer, "/movie-board") || strings.Contains(referer, "/tv-shows-board") {
+		textClass = "text-gray-300"
+	} else {
+		textClass = "text-gray-600 dark:text-gray-300"
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(`<p class="` + textClass + `">` + fortune + `</p>`))
+}
+
+// FortuneHandler handles getting a fortune (backward compatibility)
 func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -1020,7 +1063,7 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Run fortune command
+	// Run fortune command with hardcoded values for backward compatibility
 	cmd := exec.Command("/usr/games/fortune", "-s")
 	output, err := cmd.Output()
 
@@ -1054,7 +1097,63 @@ func FortuneHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`<p class="` + textClass + `">` + fortune + `</p>`))
 }
 
-// AIQueryHandler handles AI queries using Ollama
+// AIQueryHandlerWithConfig handles AI queries using Ollama with configuration
+func AIQueryHandlerWithConfig(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
+
+	// Parse form data
+	err := r.ParseForm()
+
+	if err != nil {
+		logger.ErrorWithErr("Form parsing error in AI query", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
+
+	query := r.FormValue("prompt")
+
+	if query == "" {
+		logger.Warn("Empty AI query received")
+		http.Error(w, "Query is required", http.StatusBadRequest)
+
+		return
+	}
+
+	logger.Info("Received AI query: %s", query)
+
+	// Call Ollama API with configuration
+	response, err := OllamaQuery(query, cfg.Ollama.ModelName, cfg.Ollama.Host)
+
+	if err != nil {
+		logger.ErrorWithErr("Ollama query error", err)
+		// Return error message as HTML with more details
+		w.Header().Set("Content-Type", "text/html")
+
+		errorHTML := `
+		<div class="text-red-400 mb-4">
+			<strong>Error:</strong> Failed to get AI response.<br>
+			<strong>Details:</strong> ` + template.HTMLEscapeString(err.Error()) + `<br>
+			<strong>Query:</strong> ` + template.HTMLEscapeString(query) + `
+		</div>`
+
+		w.Write([]byte(errorHTML))
+
+		return
+	}
+
+	logger.Info("AI query completed successfully, response length: %d characters", len(response))
+
+	// Return the response as plain text (HTML will be escaped by JavaScript)
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(response))
+}
+
+// AIQueryHandler handles AI queries using Ollama (backward compatibility)
 func AIQueryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -1083,7 +1182,7 @@ func AIQueryHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("Received AI query: %s", query)
 
-	// Call Ollama API
+	// Call Ollama API with hardcoded values for backward compatibility
 	response, err := OllamaQuery(query, "llama3.2:latest", "http://chadgpt.gotpwnd.org:11434")
 
 	if err != nil {
