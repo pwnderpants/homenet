@@ -129,7 +129,7 @@ func CloseDB() error {
 
 // GetAllMovies retrieves all movies from the database
 func GetAllMovies() ([]Movie, error) {
-	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, available_now FROM movies ORDER BY created_at DESC")
+	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, available_now FROM movies ORDER BY available_now DESC, year DESC, created_at DESC")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to query movies: %w", err)
@@ -235,7 +235,7 @@ func UpdateMovie(movie Movie) error {
 
 // GetRandomMovie retrieves a random movie from the database
 func GetRandomMovie() (*Movie, error) {
-	query := "SELECT id, title, year, genre, streaming, notes, imdb_link FROM movies ORDER BY RANDOM() LIMIT 1"
+	query := "SELECT id, title, year, genre, streaming, notes, imdb_link FROM movies WHERE available_now = 1 ORDER BY RANDOM() LIMIT 1"
 
 	var movie Movie
 
@@ -254,7 +254,7 @@ func GetRandomMovie() (*Movie, error) {
 
 // GetAllTVShows retrieves all TV shows from the database
 func GetAllTVShows() ([]TVShow, error) {
-	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC, created_at DESC")
+	rows, err := db.Query("SELECT id, title, year, genre, streaming, notes, imdb_link, active_season FROM tv_shows ORDER BY active_season DESC, year DESC, created_at DESC")
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to query tv shows: %w", err)
