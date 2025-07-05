@@ -146,15 +146,7 @@ function addUserMessage(message) {
     scrollToBottom();
 }
 
-function addAIResponse(html) {
-    Logger.debug('Adding AI response to chat');
-    const output = document.getElementById('ai-output');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'mb-4';
-    messageDiv.innerHTML = `<b class="text-green-400">AI:</b> <span class="text-gray-300">${html}</span>`;
-    output.appendChild(messageDiv);
-    scrollToBottom();
-}
+
 
 function addAIResponseContainer(id) {
     Logger.debug('Creating AI response container with ID:', id);

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 	"os/exec"
@@ -1109,68 +1108,4 @@ func AIQueryHandler(w http.ResponseWriter, r *http.Request) {
 	// Return the response as plain text (HTML will be escaped by JavaScript)
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(response))
-}
-
-// formatAIResponse formats the AI response for HTML display
-func formatAIResponse(response string) string {
-	// Escape HTML characters to prevent XSS
-	response = template.HTMLEscapeString(response)
-
-	// Convert newlines to <br> tags for proper HTML formatting
-	response = strings.ReplaceAll(response, "\n", "<br>")
-
-	// Add some basic styling
-	formattedHTML := `
-	<div class="text-gray-300 mb-4">
-		` + response + `
-	</div>`
-
-	return formattedHTML
-}
-
-// AIQueryStreamHandler handles streaming AI queries using Ollama
-func AIQueryStreamHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-
-		return
-	}
-
-	// Parse form data
-	err := r.ParseForm()
-
-	if err != nil {
-		logger.ErrorWithErr("Form parsing error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-
-		return
-	}
-
-	query := r.FormValue("prompt")
-
-	if query == "" {
-		logger.Warn("Empty query received")
-		http.Error(w, "Query is required", http.StatusBadRequest)
-
-		return
-	}
-
-	logger.Info("Received streaming query: %s", query)
-
-	// Stream the response from Ollama
-	err = OllamaQueryStream(w, query, "gemma3:4b", "http://chadgpt.gotpwnd.org:11434")
-
-	if err != nil {
-		logger.ErrorWithErr("Ollama streaming error", err)
-		// Send error as SSE
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Connection", "keep-alive")
-
-		fmt.Fprintf(w, "data: [ERROR] %s\n\n", template.HTMLEscapeString(err.Error()))
-
-		if flusher, ok := w.(http.Flusher); ok {
-			flusher.Flush()
-		}
-	}
 }
