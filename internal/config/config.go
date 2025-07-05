@@ -97,7 +97,7 @@ func createDefaultConfig(configPath string) error {
 		homeDir = "~" // Fallback if we can't get home directory
 	}
 	defaultConfig.Database.DataDir = filepath.Join(homeDir, ".local", "share", "homenet", "data")
-	defaultConfig.Database.DBName = "movies"
+	defaultConfig.Database.DBName = "homenet"
 
 	// Set default static files configuration
 	defaultConfig.Static.Dir = "web/static"
