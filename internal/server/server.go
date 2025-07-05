@@ -32,17 +32,17 @@ func (s *Server) SetupRoutes() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Handle main routes
-	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/", s.createHomeHandler())
 
 	// Movie board routes
-	http.HandleFunc("/movie-board", handlers.MovieBoardHandler)
+	http.HandleFunc("/movie-board", s.createMovieBoardHandler())
 	http.HandleFunc("/movie-board/add", handlers.AddMovieHandler)
 	http.HandleFunc("/movie-board/edit", handlers.EditMovieHandler)
 	http.HandleFunc("/movie-board/delete/", handlers.DeleteMovieHandler)
 	http.HandleFunc("/movie-board/random", handlers.RandomMovieHandler)
 
 	// TV Shows board routes
-	http.HandleFunc("/tv-shows-board", handlers.TVShowBoardHandler)
+	http.HandleFunc("/tv-shows-board", s.createTVShowBoardHandler())
 	http.HandleFunc("/tv-shows-board/add", handlers.AddTVShowHandler)
 	http.HandleFunc("/tv-shows-board/edit", handlers.EditTVShowHandler)
 	http.HandleFunc("/tv-shows-board/delete/", handlers.DeleteTVShowHandler)
@@ -53,6 +53,27 @@ func (s *Server) SetupRoutes() {
 	// AI routes
 	http.HandleFunc("/ai", handlers.AiHandler)
 	http.HandleFunc("/ai/query", s.createAIQueryHandler())
+}
+
+// createHomeHandler creates a handler that uses the server's configuration
+func (s *Server) createHomeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handlers.HomeHandlerWithConfig(w, r, s.config)
+	}
+}
+
+// createMovieBoardHandler creates a handler that uses the server's configuration
+func (s *Server) createMovieBoardHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handlers.MovieBoardHandlerWithConfig(w, r, s.config)
+	}
+}
+
+// createTVShowBoardHandler creates a handler that uses the server's configuration
+func (s *Server) createTVShowBoardHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handlers.TVShowBoardHandlerWithConfig(w, r, s.config)
+	}
 }
 
 // createAIQueryHandler creates a handler that uses the server's configuration

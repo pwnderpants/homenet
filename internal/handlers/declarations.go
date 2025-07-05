@@ -1,6 +1,6 @@
 package handlers
 
-// Genres list for templating
+// Genres list for templating (fallback defaults)
 var Genres = []string{
 	"Action",
 	"Adventure",
@@ -20,7 +20,7 @@ var Genres = []string{
 	"Western",
 }
 
-// StreamingServices list for templating
+// StreamingServices list for templating (fallback defaults)
 var StreamingServices = []string{
 	"Amazon Prime",
 	"Apple TV+",
@@ -82,7 +82,7 @@ var FeatureCards = []FeatureCard{
 	},
 }
 
-// AppColors defines the application's color scheme
+// AppColors defines the application's color scheme (fallback defaults)
 var AppColors = ColorScheme{
 	Primary:   "blue",
 	Secondary: "purple",
@@ -93,7 +93,7 @@ var AppColors = ColorScheme{
 	Neutral:   "gray",
 }
 
-// BadgeColors maps data types to their display colors
+// BadgeColors maps data types to their display colors (fallback defaults)
 var BadgeColors = map[string]string{
 	"year":      "gray",
 	"genre":     "blue",

@@ -52,6 +52,7 @@ func InitDB(dataDir, dbName string) error {
 
 	// Open database
 	var err error
+
 	db, err = sql.Open("sqlite3", dbPath)
 
 	if err != nil {
@@ -134,6 +135,7 @@ func GetAllMovies() ([]Movie, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query movies: %w", err)
 	}
+
 	defer rows.Close()
 
 	var movies []Movie
@@ -141,10 +143,13 @@ func GetAllMovies() ([]Movie, error) {
 	for rows.Next() {
 		var movie Movie
 		var availableNowInt int
+
 		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre, &movie.Streaming, &movie.Notes, &movie.IMDBLink, &availableNowInt)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan movie: %w", err)
 		}
+
 		movie.AvailableNow = availableNowInt == 1
 		movies = append(movies, movie)
 	}
@@ -267,10 +272,13 @@ func GetAllTVShows() ([]TVShow, error) {
 	for rows.Next() {
 		var tvShow TVShow
 		var activeSeasonInt int
+
 		err := rows.Scan(&tvShow.ID, &tvShow.Title, &tvShow.Year, &tvShow.Genre, &tvShow.Streaming, &tvShow.Notes, &tvShow.IMDBLink, &activeSeasonInt)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan tv show: %w", err)
 		}
+
 		tvShow.ActiveSeason = activeSeasonInt == 1
 		tvShows = append(tvShows, tvShow)
 	}
@@ -321,6 +329,7 @@ func DeleteTVShow(id int) error {
 	}
 
 	logger.Info("TV show deleted successfully")
+
 	return nil
 }
 
